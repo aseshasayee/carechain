@@ -20,9 +20,7 @@ import {
   drawCobbAngle
 } from './Canvas';
 
-/**
- * Handle simple 2-point line drawing
- */
+//Line Tool
 export const handleLineTool = (points, ctx) => {
   if (points.length !== 2) return null;
   drawLine(ctx, points[0], points[1], "black", 2);
@@ -31,9 +29,7 @@ export const handleLineTool = (points, ctx) => {
   return { type: "line", length };
 };
 
-/**
- * Handle angle tool: 2-point version (with horizontal/vertical reference)
- */
+// Angle2
 export const handleAngleTool2Pt = (points, ctx) => {
   if (points.length !== 2) return null;
   const [p1, p2] = points;
@@ -55,9 +51,7 @@ export const handleAngleTool2Pt = (points, ctx) => {
   };
 };
 
-/**
- * Handle angle tool: 3-point version (angle at middle point B)
- */
+//Angle3
 export const handleAngleTool3Pt = (points, ctx) => {
   if (points.length !== 3) return null;
   const [a, b, c] = points;
@@ -66,30 +60,22 @@ export const handleAngleTool3Pt = (points, ctx) => {
   return { type: "angle3pt", angle };
 };
 
-/**
- * Handle 4-point angle tool (between two lines – Cobb angle)
- */
+//Angle4
 export const handleAngleTool4Pt = (points, ctx) => {
   if (points.length !== 4) return null;
   const [A1, A2, B1, B2] = points;
+  
+  // Draw the original lines
   drawLine(ctx, A1, A2, "orange", 2);
   drawLine(ctx, B1, B2, "orange", 2);
-  drawCobbAngle(ctx, [A1, A2], [B1, B2]);
-
-  const angle = cobbAngle([A1, A2], [B1, B2]);
-  drawAngleLabel(
-    ctx,
-    midpoint(midpoint(A1, A2), midpoint(B1, B2)),
-    `Cobb: ${angle.toFixed(1)}°`,
-    "red"
-  );
-
+  
+  // Draw the Cobb angle visualization (this will handle the angle calculation and display)
+  const angle = drawCobbAngle(ctx, [A1, A2], [B1, B2]);
+  
   return { type: "angle4pt", angle };
 };
 
-/**
- * Multi-line tool: connects N points in sequence
- */
+//Multi-Line Tool
 export const handleMultiLineTool = (points, ctx) => {
   if (points.length < 2) return null;
   let totalLength = 0;
@@ -100,24 +86,68 @@ export const handleMultiLineTool = (points, ctx) => {
   return { type: "multiline", segments: points.length - 1, totalLength };
 };
 
-/**
- * Draw a circle from center and edge point
- */
+// Circle Tool
 export const handleCircleTool = (points, ctx) => {
   if (points.length !== 2) return null;
   const [center, edge] = points;
   const radius = lengthBetweenPoints(center, edge);
+  const area = Math.PI * radius * radius;
+  
+  // Draw the circle
   ctx.beginPath();
   ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
   ctx.strokeStyle = "green";
   ctx.lineWidth = 2;
   ctx.stroke();
-  return { type: "circle", center, radius };
+  
+  // Draw radius line
+  ctx.beginPath();
+  ctx.moveTo(center.x, center.y);
+  ctx.lineTo(edge.x, edge.y);
+  ctx.strokeStyle = "green";
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // Draw center point
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, 3, 0, 2 * Math.PI);
+  ctx.fillStyle = "green";
+  ctx.fill();
+  
+  // Calculate label position (outside the circle)
+  const labelDistance = radius + 20;
+  const angle = Math.atan2(edge.y - center.y, edge.x - center.x);
+  const labelX = center.x + labelDistance * Math.cos(angle);
+  const labelY = center.y + labelDistance * Math.sin(angle);
+  
+  // Draw background for better readability
+  const text = `R: ${radius.toFixed(1)} | A: ${area.toFixed(1)}`;
+  ctx.font = "14px sans-serif";
+  const textWidth = ctx.measureText(text).width;
+  
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+  ctx.fillRect(labelX - textWidth/2 - 5, labelY - 18, textWidth + 10, 25);
+  
+  ctx.strokeStyle = "green";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(labelX - textWidth/2 - 5, labelY - 18, textWidth + 10, 25);
+  
+  // Draw the text
+  ctx.fillStyle = "green";
+  ctx.textAlign = 'center';
+  ctx.fillText(text, labelX, labelY - 2);
+  ctx.textAlign = 'left'; // Reset text alignment
+  
+  return { 
+    type: "circle", 
+    center, 
+    radius: parseFloat(radius.toFixed(1)), 
+    area: parseFloat(area.toFixed(1)) 
+  };
 };
-
-/**
- * Draw an ellipse from two opposite bounding box corners
- */
+// Ellipse Tool
 export const handleEllipseTool = (points, ctx) => {
   if (points.length !== 2) return null;
   const [p1, p2] = points;
@@ -132,24 +162,93 @@ export const handleEllipseTool = (points, ctx) => {
   return { type: "ellipse", center, rx, ry };
 };
 
-/**
- * Polygon tool: draw closed shape from >=3 points
- */
-export const handlePolygonTool = (points, ctx) => {
-  if (points.length < 3) return null;
+// Polygon Tool
+export const handlePolygonTool = (points, ctx, isComplete = false) => {
+  if (points.length < 2) return null;
+  
+  // Draw the polygon outline
   ctx.beginPath();
   ctx.moveTo(points[0].x, points[0].y);
-  points.slice(1).forEach((pt) => ctx.lineTo(pt.x, pt.y));
-  ctx.closePath();
+  for (let i = 1; i < points.length; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
+  
+  if (isComplete && points.length >= 3) {
+    ctx.closePath();
+    ctx.fillStyle = "rgba(0, 100, 255, 0.1)";
+    ctx.fill();
+  }
+  
   ctx.strokeStyle = "blue";
   ctx.lineWidth = 2;
   ctx.stroke();
-  return { type: "polygon", vertices: points.length };
+  
+  // Show area if complete
+  if (isComplete && points.length >= 3) {
+    const area = calculatePolygonArea(points);
+    
+    ctx.fillStyle = "blue";
+    ctx.font = "14px sans-serif";
+    ctx.textAlign = 'center';
+    ctx.fillText(`Area: ${area.toFixed(1)}`, points[0].x, points[0].y - 15);
+  }
+  
+  // Show first point as red dot (draw last to ensure visibility)
+  ctx.beginPath();
+  ctx.arc(points[0].x, points[0].y, 5, 0, 2 * Math.PI);
+  ctx.fillStyle = "red";
+  ctx.fill();
+  
+  return isComplete ? { area: calculatePolygonArea(points) } : null;
 };
 
-/**
- * Pencil tool: draw freehand strokes
- */
+export const PolygonManager = {
+  currentPolygon: [],
+  isDrawing: false,
+  
+  addPoint(point, threshold = 15) {
+    if (!this.isDrawing) {
+      this.currentPolygon = [point];
+      this.isDrawing = true;
+      return { action: 'start', points: this.currentPolygon };
+    }
+    
+    // Check if clicking near first point to close (need 3+ points)
+    if (this.currentPolygon.length >= 3) {
+      const firstPoint = this.currentPolygon[0];
+      const distance = Math.sqrt(
+        (point.x - firstPoint.x) ** 2 + (point.y - firstPoint.y) ** 2
+      );
+      
+      if (distance < threshold) {
+        this.isDrawing = false;
+        const completed = [...this.currentPolygon];
+        this.currentPolygon = [];
+        return { action: 'complete', points: completed };
+      }
+    }
+    
+    this.currentPolygon.push(point);
+    return { action: 'continue', points: this.currentPolygon };
+  },
+  
+  reset() {
+    this.currentPolygon = [];
+    this.isDrawing = false;
+  }
+};
+
+const calculatePolygonArea = (points) => {
+  if (points.length < 3) return 0;
+  let area = 0;
+  for (let i = 0; i < points.length; i++) {
+    const j = (i + 1) % points.length;
+    area += points[i].x * points[j].y - points[j].x * points[i].y;
+  }
+  return Math.abs(area) / 2;
+};
+
+// Pencil Tool
 export const handlePencilTool = (points, ctx) => {
   if (points.length < 2) return null;
   ctx.beginPath();
