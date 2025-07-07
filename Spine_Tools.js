@@ -339,9 +339,6 @@ export const calculateSVA = (c7Centroid, s1Posterosuperior, ctx = null) => {
     // Draw C7 plumb line (vertical from C7)
     drawVerticalLine(ctx, c7Centroid.x, ctx.canvas.height, 'blue', 2);
     
-    // Draw S1 posterosuperior point
-    drawLine(ctx, s1Posterosuperior, s1Posterosuperior, 'red', 6);
-    
     // Draw horizontal distance line
     const horizontalEnd = { x: c7Centroid.x, y: s1Posterosuperior.y };
     drawLine(ctx, s1Posterosuperior, horizontalEnd, 'green', 2);
@@ -504,6 +501,48 @@ export const calculateT9SPi = (t9Centroid, femoralHead1, femoralHead2, ctx = nul
   return t9spiAngle;
 };
 
+export const calculateODHA = (odontoidTip, femoralHead1, femoralHead2, ctx = null) => {
+  // Step 1: Calculate femoral center
+  const femoralCenter = midpoint(femoralHead1, femoralHead2);
+  
+  // Step 2: Calculate angle with vertical
+  const ODHA = angleWithVertical(odontoidTip, femoralCenter);
+  
+  // Step 3: Draw if context provided
+  if (ctx) {
+    // Draw line from T9 to femoral center
+    drawLine(ctx, odontoidTip, femoralCenter, 'blue', 2);
+    
+    // Draw vertical line at femoral center
+    drawVerticalLine(ctx, femoralCenter.x, ctx.canvas.height, 'orange', 2);
+    
+    // Mark points
+    drawLine(ctx, femoralHead1, femoralHead2, 'black', 2);
+    
+    // Draw angle arc and label
+    const verticalPoint = { x: femoralCenter.x, y: femoralCenter.y - 50 };
+    drawAngleArc(ctx, odontoidTip, femoralCenter, verticalPoint, 'red',30, `OD-HA: ${ODHA.toFixed(1)}°`);
+  }
+  
+  return ODHA;
+};
+
+export const calculateCBVA = (chin, brow, ctx = null) => {
+  const CBVA = angleWithVertical(chin, brow);
+  if (ctx) {
+    // Draw line from chin to brow
+    drawLine(ctx, chin, brow, 'blue', 2);
+    
+    // Draw vertical line at brow
+    drawVerticalLine(ctx, chin.x, ctx.canvas.height, 'orange', 2);
+    
+    // Draw angle arc and label
+    const verticalPoint = { x: chin.x, y: chin.y - 50 };
+    drawAngleArc(ctx, brow, chin, verticalPoint, 'red', 30, `CBVA: ${CBVA.toFixed(1)}°`);
+  }
+  return CBVA;
+}
+
 // CORONAL PARAMETERS
 
 export const drawC7PL = (c7Centroid, ctx = null) => {
@@ -611,3 +650,108 @@ export const calculateRVAD = (leftRibP1, leftRibP2, rightRibP1, rightRibP2, apic
   
   return rvad;
 };
+
+export const calculateAVT = (AVCentroid, s1EndLeft, s1EndRight, ctx = null) => {
+  const s1Midpoint = midpoint(s1EndLeft, s1EndRight);
+  
+  const AVT = Math.abs(AVCentroid.x - s1Midpoint.x);
+  if (ctx) {
+    drawVerticalLine(ctx, s1Midpoint.x, ctx.canvas.height, 'blue', 2);
+    
+    const horizontalEnd = { x: s1Midpoint.x, y: AVCentroid.y };
+    drawLine(ctx, AVCentroid, horizontalEnd, 'green', 2);
+
+    const labelPoint = midpoint(AVCentroid, horizontalEnd);
+    labelPoint.y -= 20; 
+    drawAngleLabel(ctx, labelPoint, `AVT: ${AVT.toFixed(1)}mm`, 'black');
+  }
+  
+  return AVT;
+}
+
+export const calculatePO = (PSISLeft, PSISRight, ctx = null) => {
+
+  const PO = angleWithHorizontal(PSISLeft, PSISRight);
+  if (ctx) {
+    drawLine(ctx, PSISLeft, PSISRight, 'blue', 2);
+
+    drawHorizontalLine(ctx, PSISLeft.y, ctx.canvas.width, 'orange', 2);
+
+    const horizontalpoint = { x: PSISLeft.x + 50, y: PSISLeft.y };
+    drawAngleArc(ctx, PSISRight, PSISLeft, horizontalpoint, 'red', 30, `PO: ${PO.toFixed(1)}°`);
+  }
+  return PO;
+}
+
+// VERTEBRAL BODY METRICS (VBM)
+
+export const VBM = (uA, uP, bA, bP, ctx = null) => {
+  const Aheight = lengthBetweenPoints(uA, bA);
+  const Pheight = lengthBetweenPoints(uP, bP);
+  const Angle = handleAngleTool4Pt([uA, uP, bA, bP], ctx);
+  
+  if (ctx) {
+    drawLine(ctx, uA, bA, 'blue', 2);
+    drawLine(ctx, uP, bP, 'blue', 2);
+    drawAngleLabel(ctx, midpoint(uA, bA), `AH: ${Aheight.toFixed(1)}mm`, 'black');
+    drawAngleLabel(ctx, midpoint(uP, bP), `PH: ${Pheight.toFixed(1)}mm`, 'black');
+    drawAngleLabel(ctx, midpoint(uA, uP), `Wedge Angle: ${Angle.angle.toFixed(1)}°`, 'black');
+    
+    // NEW: Draw initial outline with handles
+    drawVertebralOutline(ctx, [uA, uP, bP, bA]);
+  }
+  
+  return { Aheight, Pheight, Angle };
+};
+
+const drawVertebralOutline = (ctx, points) => {
+  // Draw the outline
+  ctx.beginPath();
+  ctx.moveTo(points[0].x, points[0].y);
+  points.forEach(point => ctx.lineTo(point.x, point.y));
+  ctx.closePath();
+  
+  ctx.strokeStyle = "orange";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = "rgba(255, 165, 0, 0.1)";
+  ctx.fill();
+  
+  // Draw draggable handles
+  points.forEach((point, i) => {
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    ctx.strokeStyle = "orange";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+};
+
+export const handleOutlineDrag = (points, mouseX, mouseY, isDragging, dragIndex) => {
+  if (isDragging && dragIndex !== null) {
+    points[dragIndex] = { x: mouseX, y: mouseY };
+    return true;
+  }
+  
+  // Check if mouse is over a handle
+  for (let i = 0; i < points.length; i++) {
+    const dist = Math.sqrt((mouseX - points[i].x) ** 2 + (mouseY - points[i].y) ** 2);
+    if (dist < 10) {
+      return i; // Return handle index
+    }
+  }
+  return null;
+};
+
+export const getOutlineArea = (points) => {
+  let area = 0;
+  for (let i = 0; i < points.length; i++) {
+    const j = (i + 1) % points.length;
+    area += points[i].x * points[j].y - points[j].x * points[i].y;
+  }
+  return Math.abs(area) / 2;
+};
+
+
