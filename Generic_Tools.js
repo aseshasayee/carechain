@@ -147,6 +147,7 @@ export const handleCircleTool = (points, ctx) => {
     area: parseFloat(area.toFixed(1)) 
   };
 };
+
 // Ellipse Tool
 export const handleEllipseTool = (points, ctx) => {
   if (points.length !== 2) return null;
@@ -238,7 +239,7 @@ export const PolygonManager = {
   }
 };
 
-const calculatePolygonArea = (points) => {
+export const calculatePolygonArea = (points) => {
   if (points.length < 3) return 0;
   let area = 0;
   for (let i = 0; i < points.length; i++) {

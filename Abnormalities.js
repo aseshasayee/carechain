@@ -1,4 +1,3 @@
-// Import from Core.js
 import { 
   midpoint, 
   angleWithHorizontal, 
@@ -7,10 +6,10 @@ import {
   cobbAngle, 
   lengthBetweenPoints,
   normalizeVector,
-  vector
+  vector,
+  lineIntersection,
 } from './Core';
 
-// Import from Canvas.js
 import { 
   drawLine, 
   drawVerticalLine,
@@ -22,21 +21,18 @@ import {
   drawDashedLine
 } from './Canvas';
 
-// Import from Generic_Tools.js
 import {
   handlePolygonTool,
-  PolygonManager
+  PolygonManager,
+  handleAngleTool4Pt
 } from './Generic_Tools';
 
-// Import from Spine_Tools.js
 import {
   calculateTrunkShift,
-  handleAngleTool4Pt
+  calculateAVT
 } from './Spine_Tools';
 
-// =============================================================================
 // STENOSIS MEASUREMENTS
-// =============================================================================
 
 export const STENOSIS_TYPES = {
   CENTRAL: {
@@ -109,7 +105,7 @@ export const StenosisPolygonManager = {
   }
 };
 
-const calculatePolygonCentroid = (points) => {
+export const calculatePolygonCentroid = (points) => {
   if (points.length === 0) return { x: 0, y: 0 };
   
   const sum = points.reduce((acc, point) => ({
@@ -123,7 +119,7 @@ const calculatePolygonCentroid = (points) => {
   };
 };
 
-const classifyStenosisSeverity = (area) => {
+export const classifyStenosisSeverity = (area) => {
   // Classification based on cross-sectional area (rough guidelines)
   if (area < 100) return 'Severe';
   if (area < 200) return 'Moderate';
@@ -131,9 +127,7 @@ const classifyStenosisSeverity = (area) => {
   return 'Normal';
 };
 
-// =============================================================================
 // SPONDYLOLISTHESIS MEASUREMENTS
-// =============================================================================
 
 export const SPONDYLOLISTHESIS_GRADES = {
   GRADE_I: { min: 0, max: 25, label: 'Grade I (0-25%)' },
@@ -143,268 +137,129 @@ export const SPONDYLOLISTHESIS_GRADES = {
   GRADE_V: { min: 100, max: Infinity, label: 'Grade V (>100%)' }
 };
 
-export const calculateSlipDistance = (upperVertPosterior, upperVertAnterior, lowerVertPosterior, lowerVertAnterior, ctx = null) => {
-  // Calculate the posterior edges alignment
-  const slipDistance = Math.abs(upperVertPosterior.x - lowerVertPosterior.x);
+export const calculateSlipDistance = (uA, uP, bA, bP, ctx = null) => {
+  // Find perpendicular from uP to lower line bA-bP
+  const perpEnd = {
+    x: uP.x - (bP.y - bA.y),
+    y: uP.y + (bP.x - bA.x)
+  };
+  
+  // Find intersection of perpendicular with lower line
+  const intersection = lineIntersection(uP, perpEnd, bA, bP);
+  
+  if (!intersection) return 0;
+  
+  // Slip distance is distance between intersection and bP
+  const slipDistance = lengthBetweenPoints(intersection, bP);
   
   if (ctx) {
-    // Draw vertebral body outlines
-    drawLine(ctx, upperVertPosterior, upperVertAnterior, 'blue', 3);
-    drawLine(ctx, lowerVertPosterior, lowerVertAnterior, 'blue', 3);
-    
-    // Draw slip measurement line
-    const measurementY = (upperVertPosterior.y + lowerVertPosterior.y) / 2;
-    const measurementStart = { x: upperVertPosterior.x, y: measurementY };
-    const measurementEnd = { x: lowerVertPosterior.x, y: measurementY };
-    
-    drawLine(ctx, measurementStart, measurementEnd, 'red', 2);
-    drawDashedLine(ctx, upperVertPosterior, measurementStart, [5, 5], 'red');
-    drawDashedLine(ctx, lowerVertPosterior, measurementEnd, [5, 5], 'red');
-    
-    // Label slip distance
-    const labelPoint = midpoint(measurementStart, measurementEnd);
-    labelPoint.y -= 15;
-    drawAngleLabel(ctx, labelPoint, `Slip Distance: ${slipDistance.toFixed(1)}mm`, 'red');
+    drawLine(ctx, uP, uA, 'blue', 3);
+    drawLine(ctx, bA, intersection, 'blue', 3);
+    drawLine(ctx, intersection, bP, 'green', 3);
+    drawLine(ctx, uP, intersection, 'red', 1, [5, 5]);
+    drawAngleLabel(ctx, { x: (intersection.x + bP.x) / 2, y: (intersection.y + bP.y) / 2 - 15 }, 
+                   `Slip Distance: ${slipDistance.toFixed(1)}mm`, 'red');
   }
   
   return slipDistance;
 };
 
-export const calculateSlipAngle = (upperVertPosterior, upperVertAnterior, lowerVertPosterior, lowerVertAnterior, ctx = null) => {
-  // Calculate the angle between the two vertebral body endplates
-  const slipAngle = handleAngleTool4Pt([upperVertPosterior, upperVertAnterior, lowerVertPosterior, lowerVertAnterior], ctx);
+export const calculateSlipAngle = (uA, uP, bA, bP, ctx = null) => {
+  // Calculate angle between upper and lower plates
+  const upperVector = { x: uA.x - uP.x, y: uA.y - uP.y };
+  const lowerVector = { x: bA.x - bP.x, y: bA.y - bP.y };
   
-  if (ctx && slipAngle) {
-    // Additional labeling for slip angle
-    const midUpper = midpoint(upperVertPosterior, upperVertAnterior);
-    const midLower = midpoint(lowerVertPosterior, lowerVertAnterior);
-    const labelPoint = midpoint(midUpper, midLower);
-    labelPoint.x += 30;
-    
-    drawAngleLabel(ctx, labelPoint, `Slip Angle: ${slipAngle.angle.toFixed(1)}°`, 'purple');
+  const dot = upperVector.x * lowerVector.x + upperVector.y * lowerVector.y;
+  const mag1 = Math.hypot(upperVector.x, upperVector.y);
+  const mag2 = Math.hypot(lowerVector.x, lowerVector.y);
+  
+  const angle = Math.acos(Math.max(-1, Math.min(1, dot / (mag1 * mag2)))) * 180 / Math.PI;
+  
+  if (ctx) {
+    const midUpper = { x: (uA.x + uP.x) / 2, y: (uA.y + uP.y) / 2 };
+    const midLower = { x: (bA.x + bP.x) / 2, y: (bA.y + bP.y) / 2 };
+    drawAngleLabel(ctx, { x: (midUpper.x + midLower.x) / 2 + 30, y: (midUpper.y + midLower.y) / 2 }, 
+                   `Slip Angle: ${angle.toFixed(1)}°`, 'purple');
   }
   
-  return slipAngle ? slipAngle.angle : null;
+  return angle;
 };
 
-export const calculateSlipPercentage = (upperVertPosterior, upperVertAnterior, lowerVertPosterior, lowerVertAnterior, ctx = null) => {
-  // Calculate slip distance
-  const slipDistance = Math.abs(upperVertPosterior.x - lowerVertPosterior.x);
-  
-  // Calculate the AP diameter of the lower vertebral body
-  const lowerVertAP = lengthBetweenPoints(lowerVertPosterior, lowerVertAnterior);
-  
-  // Calculate slip percentage
-  const slipPercentage = (slipDistance / lowerVertAP) * 100;
-  
-  // Determine grade
+export const calculateSlipPercentage = (uA, uP, bA, bP, ctx = null) => {
+  const slipDistance = calculateSlipDistance(uA, uP, bA, bP, ctx);
+  const lowerPlateLength = lengthBetweenPoints(bP, bA);
+  const slipPercentage = (slipDistance / lowerPlateLength) * 100;
   const grade = classifySlipGrade(slipPercentage);
   
   if (ctx) {
-    // Draw vertebral bodies
-    drawLine(ctx, upperVertPosterior, upperVertAnterior, 'blue', 3);
-    drawLine(ctx, lowerVertPosterior, lowerVertAnterior, 'blue', 3);
-    
-    // Draw AP diameter measurement
-    const midLowerY = (lowerVertPosterior.y + lowerVertAnterior.y) / 2;
-    const apStart = { x: lowerVertPosterior.x, y: midLowerY };
-    const apEnd = { x: lowerVertAnterior.x, y: midLowerY };
-    
-    drawLine(ctx, apStart, apEnd, 'green', 2);
-    drawDashedLine(ctx, lowerVertPosterior, apStart, [3, 3], 'green');
-    drawDashedLine(ctx, lowerVertAnterior, apEnd, [3, 3], 'green');
-    
-    // Draw slip distance
-    const slipY = upperVertPosterior.y;
-    const slipStart = { x: upperVertPosterior.x, y: slipY };
-    const slipEnd = { x: lowerVertPosterior.x, y: slipY };
-    
-    drawLine(ctx, slipStart, slipEnd, 'red', 2);
-    drawDashedLine(ctx, upperVertPosterior, slipStart, [5, 5], 'red');
-    drawDashedLine(ctx, lowerVertPosterior, slipEnd, [5, 5], 'red');
-    
-    // Label measurements
-    const apLabelPoint = midpoint(apStart, apEnd);
-    apLabelPoint.y += 20;
-    drawAngleLabel(ctx, apLabelPoint, `AP: ${lowerVertAP.toFixed(1)}mm`, 'green');
-    
-    const slipLabelPoint = midpoint(slipStart, slipEnd);
-    slipLabelPoint.y -= 15;
-    drawAngleLabel(ctx, slipLabelPoint, `${slipPercentage.toFixed(1)}% - ${grade.label}`, 'red');
+    drawAngleLabel(ctx, { x: (bP.x + bA.x) / 2, y: (bP.y + bA.y) / 2 + 20 }, 
+                   `${slipPercentage.toFixed(1)}% - ${grade.label}`, 'green');
   }
   
   return {
-    slipDistance: slipDistance,
-    apDiameter: lowerVertAP,
-    slipPercentage: slipPercentage,
-    grade: grade
+    slipDistance,
+    plateLength: lowerPlateLength,
+    slipPercentage,
+    grade
   };
 };
 
-export const calculateCompleteSpondylolisthesis = (upperVertPosterior, upperVertAnterior, lowerVertPosterior, lowerVertAnterior, ctx = null) => {
-  const slipDistance = calculateSlipDistance(upperVertPosterior, upperVertAnterior, lowerVertPosterior, lowerVertAnterior, ctx);
-  const slipAngle = calculateSlipAngle(upperVertPosterior, upperVertAnterior, lowerVertPosterior, lowerVertAnterior, ctx);
-  const slipData = calculateSlipPercentage(upperVertPosterior, upperVertAnterior, lowerVertPosterior, lowerVertAnterior, ctx);
+export const calculateCompleteSpondylolisthesis = (uA, uP, bA, bP, ctx = null) => {
+  const slipDistance = calculateSlipDistance(uA, uP, bA, bP, ctx);
+  const slipAngle = calculateSlipAngle(uA, uP, bA, bP, ctx);
+  const slipData = calculateSlipPercentage(uA, uP, bA, bP, ctx);
   
   return {
     type: 'spondylolisthesis',
-    slipDistance: slipDistance,
-    slipAngle: slipAngle,
+    slipDistance,
+    slipAngle,
     slipPercentage: slipData.slipPercentage,
-    apDiameter: slipData.apDiameter,
+    plateLength: slipData.plateLength,
     grade: slipData.grade
   };
 };
 
-const classifySlipGrade = (percentage) => {
-  for (const [key, grade] of Object.entries(SPONDYLOLISTHESIS_GRADES)) {
+export const classifySlipGrade = (percentage) => {
+  for (const grade of Object.values(SPONDYLOLISTHESIS_GRADES)) {
     if (percentage >= grade.min && percentage < grade.max) {
       return grade;
     }
   }
-  return SPONDYLOLISTHESIS_GRADES.GRADE_V; // Default to Grade V if >100%
+  return SPONDYLOLISTHESIS_GRADES.GRADE_V;
 };
 
-// =============================================================================
 // SCOLIOSIS MEASUREMENTS
-// =============================================================================
 
-export const SCOLIOSIS_CURVE_TYPES = {
-  THORACIC: {
-    label: 'Thoracic Curve',
-    color: 'blue',
-    description: 'Primary thoracic scoliotic curve'
-  },
-  LUMBAR: {
-    label: 'Lumbar Curve',
-    color: 'green', 
-    description: 'Primary lumbar scoliotic curve'
-  },
-  THORACOLUMBAR: {
-    label: 'Thoracolumbar Curve',
-    color: 'orange',
-    description: 'Thoracolumbar junction curve'
-  },
-  DOUBLE_MAJOR: {
-    label: 'Double Major Curve',
-    color: 'purple',
-    description: 'Two major curves of similar magnitude'
-  }
-};
-
-export const calculateScoliosisCobbAngle = (upperEndP1, upperEndP2, lowerEndP1, lowerEndP2, ctx = null, curveType = 'THORACIC') => {
-  // Use the existing Cobb angle calculation
-  const cobbResult = handleAngleTool4Pt([upperEndP1, upperEndP2, lowerEndP1, lowerEndP2], ctx);
+export const calculateScoliosisCobbAngle = (uA, uP, bA, bP, ctx = null) => {
   
-  if (ctx && cobbResult) {
-    const config = SCOLIOSIS_CURVE_TYPES[curveType] || SCOLIOSIS_CURVE_TYPES['THORACIC'];
-    
-    // Additional scoliosis-specific labeling
-    const midUpper = midpoint(upperEndP1, upperEndP2);
-    const midLower = midpoint(lowerEndP1, lowerEndP2);
-    const labelPoint = midpoint(midUpper, midLower);
-    labelPoint.x += 40;
-    
-    drawAngleLabel(ctx, labelPoint, `${config.label}: ${cobbResult.angle.toFixed(1)}°`, config.color);
-    
-    // Add severity classification
-    const severity = classifyCobbSeverity(cobbResult.angle);
-    labelPoint.y += 20;
-    drawAngleLabel(ctx, labelPoint, `Severity: ${severity}`, config.color);
+  const points = [uA, uP, bA, bP];
+  const genericResult = handleAngleTool4Pt(points,ctx);
+  if (ctx) {
+    const midA = midpoint(uA, uP);
+    const midB = midpoint(bA, bP);
+    const labelPosition = {
+      x: (midA.x + midB.x) / 2 + 30,
+      y: (midA.y + midB.y) / 2 - 15
+    };
+    drawAngleLabel(ctx, labelPosition, `Cobb Angle: ${genericResult.angle.toFixed(1)}°`);
   }
-  
-  return cobbResult ? {
-    ...cobbResult,
-    type: 'scoliosis_cobb',
-    curveType: curveType,
-    severity: classifyCobbSeverity(cobbResult.angle)
-  } : null;
+  return drawCobbAngle(ctx, [uA, uP], [bA, bP]);
 };
 
 export const calculateScoliosisTrunkShift = (c7Centroid, s1EndLeft, s1EndRight, ctx = null) => {
-  // Use the existing trunk shift calculation
-  const trunkShift = calculateTrunkShift(c7Centroid, s1EndLeft, s1EndRight, ctx);
-  
-  if (ctx) {
-    // Additional scoliosis-specific labeling
-    const labelPoint = { ...c7Centroid };
-    labelPoint.y -= 40;
-    drawAngleLabel(ctx, labelPoint, `Scoliosis Trunk Shift: ${trunkShift.toFixed(1)}mm`, 'red');
-    
-    // Add severity classification
-    const severity = classifyTrunkShiftSeverity(trunkShift);
-    labelPoint.y += 20;
-    drawAngleLabel(ctx, labelPoint, `Severity: ${severity}`, 'red');
-  }
-  
-  return {
-    type: 'scoliosis_trunk_shift',
-    trunkShift: trunkShift,
-    severity: classifyTrunkShiftSeverity(trunkShift)
-  };
+  return calculateTrunkShift(c7Centroid, s1EndLeft, s1EndRight, ctx);
 };
 
-export const calculateAPT = (anteriorVertebralLine1, anteriorVertebralLine2, posteriorVertebralLine1, posteriorVertebralLine2, ctx = null) => {
-  // Calculate the angle between anterior and posterior vertebral lines
-  // This represents the apical vertebral translation/rotation
-  const aptAngle = handleAngleTool4Pt([anteriorVertebralLine1, anteriorVertebralLine2, posteriorVertebralLine1, posteriorVertebralLine2], ctx);
-  
-  if (ctx && aptAngle) {
-    // Draw additional visualization for APT
-    const midAnterior = midpoint(anteriorVertebralLine1, anteriorVertebralLine2);
-    const midPosterior = midpoint(posteriorVertebralLine1, posteriorVertebralLine2);
-    
-    // Draw connection between anterior and posterior lines
-    drawDashedLine(ctx, midAnterior, midPosterior, [5, 5], 'gray');
-    
-    // Label APT
-    const labelPoint = midpoint(midAnterior, midPosterior);
-    labelPoint.x += 30;
-    drawAngleLabel(ctx, labelPoint, `APT: ${aptAngle.angle.toFixed(1)}°`, 'purple');
-  }
-  
-  return aptAngle ? {
-    ...aptAngle,
-    type: 'scoliosis_apt'
-  } : null;
+export const calculateScoliosisAVT = (AVCentroid, s1EndLeft, s1EndRight, ctx = null) => {
+  return calculateAVT(AVCentroid, s1EndLeft, s1EndRight, ctx);
 };
 
-export const calculateCompleteScoliosis = (upperEndP1, upperEndP2, lowerEndP1, lowerEndP2, c7Centroid, s1EndLeft, s1EndRight, ctx = null, curveType = 'THORACIC') => {
-  const cobbAngle = calculateScoliosisCobbAngle(upperEndP1, upperEndP2, lowerEndP1, lowerEndP2, ctx, curveType);
-  const trunkShift = calculateScoliosisTrunkShift(c7Centroid, s1EndLeft, s1EndRight, ctx);
-  
-  return {
-    type: 'scoliosis_complete',
-    cobbAngle: cobbAngle,
-    trunkShift: trunkShift,
-    curveType: curveType
-  };
-};
-
-const classifyCobbSeverity = (angle) => {
-  if (angle < 10) return 'Normal';
-  if (angle < 25) return 'Mild';
-  if (angle < 40) return 'Moderate';
-  if (angle < 50) return 'Severe';
-  return 'Very Severe';
-};
-
-const classifyTrunkShiftSeverity = (shift) => {
-  if (shift < 10) return 'Minimal';
-  if (shift < 20) return 'Mild';
-  if (shift < 30) return 'Moderate';
-  return 'Severe';
-};
-
-// =============================================================================
 // UTILITY FUNCTIONS
-// =============================================================================
 
 export const getAbnormalityTypes = () => {
   return {
     stenosis: Object.keys(STENOSIS_TYPES),
-    spondylolisthesis: Object.keys(SPONDYLOLISTHESIS_GRADES),
-    scoliosis: Object.keys(SCOLIOSIS_CURVE_TYPES)
+    spondylolisthesis: Object.keys(SPONDYLOLISTHESIS_GRADES)
   };
 };
 
@@ -414,8 +269,6 @@ export const getAbnormalityConfig = (type, subtype) => {
       return STENOSIS_TYPES[subtype];
     case 'spondylolisthesis':
       return SPONDYLOLISTHESIS_GRADES[subtype];
-    case 'scoliosis':
-      return SCOLIOSIS_CURVE_TYPES[subtype];
     default:
       return null;
   }

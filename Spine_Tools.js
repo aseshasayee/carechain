@@ -146,6 +146,52 @@ export const calculateSpinopelvicParams = (femoralHead1, femoralHead2, s1EndLeft
 
 // SPINAL CURVATURE PARAMETERS
 
+export const calculateSpinalCurvatureAngle = (points, ctx, curveType = 'CUSTOM', customLabel = null) => {
+  if (points.length !== 4) {
+    console.error('Invalid points array. Expected 4 points.');
+    return null;
+  }
+  
+  const [A1, A2, B1, B2] = points;
+  
+  // Get measurement configuration
+  const config = SPINAL_CURVATURE_TYPES[curveType] || SPINAL_CURVATURE_TYPES['CUSTOM'];
+  const label = customLabel || config.label;
+  
+  // Use the generic angle calculation
+  const genericResult = handleAngleTool4Pt(points, ctx);
+  
+  if (!genericResult) return null;
+  
+  // Add spinal-specific labeling
+  if (ctx && label) {
+    const midA = midpoint(A1, A2);
+    const midB = midpoint(B1, B2);
+    const labelPosition = {
+      x: (midA.x + midB.x) / 2 + 30,
+      y: (midA.y + midB.y) / 2 - 15
+    };
+    
+    // Draw measurement label
+    drawAngleLabel(ctx, labelPosition, `${config.abbreviation}: ${genericResult.angle.toFixed(1)}°`);
+  }
+  
+  return {
+    type: "spinal_curvature",
+    angle: genericResult.angle,
+    measurement: {
+      label: label,
+      abbreviation: config.abbreviation,
+      region: config.region,
+      curveType: config.type,
+      value: genericResult.angle,
+      unit: "degrees"
+    }
+  };
+};
+
+// Utilities
+
 export const SPINAL_CURVATURE_TYPES = {
   // Cervical Region
   'CL_C2_C7': {
@@ -256,50 +302,6 @@ export const SPINAL_CURVATURE_TYPES = {
     region: 'Custom',
     type: 'Angle'
   }
-};
-
-export const calculateSpinalCurvatureAngle = (points, ctx, curveType = 'CUSTOM', customLabel = null) => {
-  if (points.length !== 4) {
-    console.error('Invalid points array. Expected 4 points.');
-    return null;
-  }
-  
-  const [A1, A2, B1, B2] = points;
-  
-  // Get measurement configuration
-  const config = SPINAL_CURVATURE_TYPES[curveType] || SPINAL_CURVATURE_TYPES['CUSTOM'];
-  const label = customLabel || config.label;
-  
-  // Use the generic angle calculation
-  const genericResult = handleAngleTool4Pt(points, ctx);
-  
-  if (!genericResult) return null;
-  
-  // Add spinal-specific labeling
-  if (ctx && label) {
-    const midA = midpoint(A1, A2);
-    const midB = midpoint(B1, B2);
-    const labelPosition = {
-      x: (midA.x + midB.x) / 2 + 30,
-      y: (midA.y + midB.y) / 2 - 15
-    };
-    
-    // Draw measurement label
-    drawAngleLabel(ctx, labelPosition, `${config.abbreviation}: ${genericResult.angle.toFixed(1)}°`);
-  }
-  
-  return {
-    type: "spinal_curvature",
-    angle: genericResult.angle,
-    measurement: {
-      label: label,
-      abbreviation: config.abbreviation,
-      region: config.region,
-      curveType: config.type,
-      value: genericResult.angle,
-      unit: "degrees"
-    }
-  };
 };
 
 export const getSpinalCurvatureOptions = () => {
