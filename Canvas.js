@@ -217,7 +217,7 @@ export const drawArc = (ctx, center, v1, v2, radius, color, label, angle) => {
   ctx.font = "13px sans-serif";
   ctx.fillText(`${label}: ${Math.round(angle)}°`, lx, ly);
 };
-
+ 
 // Angle ABC
 export const drawABC = (ctx, A, B, C, label = "Angle", color = "blue") => {
   drawLine(ctx, A, B, color, 2);

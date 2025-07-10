@@ -24,7 +24,7 @@ export const lengthPointToLine = (pt, [a, b]) => {
   const den = Math.hypot(b.y - a.y, b.x - a.x);
   return num / (den || 1e-6);
 };
-
+ 
 // 🧭 Angle Computations
 
 // Angle between line AB and horizontal axis (acute angle 0-90°)
