@@ -1,0 +1,416 @@
+/* App.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.app-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.header {
+  background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  color: white;
+  text-align: center;
+  padding: 30px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.content {
+  padding: 30px;
+}
+
+.instructions {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-left: 5px solid #2196f3;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 8px;
+}
+
+.instructions h3 {
+  color: #1976d2;
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+}
+
+.instructions ol {
+  margin-left: 20px;
+  margin-bottom: 15px;
+}
+
+.instructions li {
+  margin-bottom: 8px;
+  color: #1565c0;
+}
+
+.instructions .note {
+  background: rgba(255, 255, 255, 0.7);
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 30px;
+  align-items: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.file-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.file-input input[type="file"] {
+  width: 100%;
+  padding: 12px;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-input input[type="file"]:hover {
+  border-color: #4caf50;
+  background: #f8fff8;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-reset {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: white;
+}
+
+.btn-reset:hover {
+  background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+}
+
+.btn-sample {
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  color: white;
+}
+
+.btn-sample:hover {
+  background: linear-gradient(135deg, #388e3c 0%, #2e7d32 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.status-section {
+  background: #fff3e0;
+  border: 1px solid #ffb74d;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.status-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #f57c00;
+  margin-bottom: 10px;
+}
+
+.status-text {
+  font-size: 1rem;
+  color: #ef6c00;
+  margin-bottom: 8px;
+}
+
+.step-text {
+  font-size: 0.9rem;
+  color: #ff9800;
+  font-style: italic;
+}
+
+.canvas-container {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #fafafa;
+  border-radius: 10px;
+}
+
+.canvas-wrapper {
+  display: inline-block;
+  position: relative;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+canvas {
+  display: block;
+  cursor: crosshair;
+  transition: all 0.3s ease;
+}
+
+canvas:hover {
+  transform: scale(1.01);
+}
+
+.legend {
+  background: #f5f5f5;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.legend h4 {
+  margin-bottom: 15px;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 1px solid #ddd;
+}
+
+.legend-line {
+  width: 30px;
+  height: 3px;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+.legend-text {
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.point-a-color {
+  background-color: #2196f3;
+}
+
+.point-b-color {
+  background-color: #f44336;
+}
+
+.point-c-color {
+  background-color: #2196f3;
+}
+
+.line-ab-color {
+  background-color: #2196f3;
+}
+
+.line-bc-color {
+  background-color: #4caf50;
+}
+
+.cutting-line-color {
+  background-color: #f44336;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-container {
+    padding: 10px;
+  }
+  
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .content {
+    padding: 20px;
+  }
+  
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .file-input {
+    min-width: auto;
+  }
+  
+  .btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .legend-items {
+    justify-content: center;
+    gap: 10px;
+  }
+  
+  canvas {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 20px;
+  }
+  
+  .header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .content {
+    padding: 15px;
+  }
+  
+  .instructions {
+    padding: 15px;
+  }
+  
+  .controls {
+    padding: 15px;
+  }
+}
+
+/* Animation for status changes */
+.status-section {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading animation */
+.processing {
+  position: relative;
+  overflow: hidden;
+}
+
+.processing::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Tooltip styles */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 200px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -100px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 12px;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Success message */
+.success-message {
+  background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+  border: 1px solid #4caf50;
+  color: #2e7d32;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
