@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CareChain</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-container { background: var(--light-bg); min-height: 100vh; }
+        .dashboard-content { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+        .dashboard-header { margin-bottom: 2rem; }
+        .dashboard-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .dashboard-subtitle { color: var(--text-secondary); }
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; }
+        .stat-title { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); }
+        .section { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.5rem; margin-bottom: 2rem; }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
+        .user-list { display: grid; gap: 1rem; }
+        .user-card { background: var(--light-bg); border-radius: var(--radius); padding: 1rem 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
+        .user-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+        .user-info { color: var(--text-secondary); font-size: 0.95rem; }
+        .user-actions { margin-top: 0.5rem; }
+        .btn-action { background: var(--primary-color); color: white; border: none; border-radius: var(--radius); padding: 0.5rem 1.2rem; font-size: 0.95rem; cursor: pointer; }
+        .btn-action:hover { background: var(--primary-dark); }
+        @media (max-width: 768px) { .dashboard-content { padding: 1rem 0.5rem; } .stats-cards { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="index.html" class="logo"><i class="fas fa-heartbeat"></i><span>CareChain</span></a>
+        </div>
+            <nav class="nav">
+                <a href="index.html">Home</a>
+                <a href="jobs_new.html">Jobs</a>
+                <a href="profile.html">Profile</a>
+                <a href="admin_dashboard.html" class="active">Dashboard</a>
+                <a href="messages.html">Messages</a>
+            </nav>
+            <div class="header-right">
+                <div class="user-menu">
+                    <span id="userName">Admin</span>
+                    <button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+                </div>
+    </header>
+    <div class="dashboard-container">
+        <div class="dashboard-content">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Welcome, <span id="adminName">Admin</span></h1>
+                <p class="dashboard-subtitle">System overview and user management</p>
+                </div>
+            <div class="stats-cards">
+                <div class="stat-card"><div class="stat-title">Total Users</div><div class="stat-value" id="totalUsers">0</div></div>
+                <div class="stat-card"><div class="stat-title">Total Jobs</div><div class="stat-value" id="totalJobs">0</div></div>
+                <div class="stat-card"><div class="stat-title">Total Applications</div><div class="stat-value" id="totalApplications">0</div></div>
+                </div>
+            <div class="section">
+                <div class="section-title">User Management</div>
+                <div class="user-list" id="userList"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/api-config.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script>
+    // JS logic will be added after UI refactor for data loading, stats, and user management
+    </script>
+</body>
+</html> 

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testing Guide - CareChain Healthcare Job Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #3498db;
+            margin-top: 30px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+        }
+        .step {
+            background-color: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 5px solid #3498db;
+            border-radius: 3px;
+        }
+        .step h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .step pre {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .step code {
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        .testing-flow {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .flow-step {
+            min-width: 150px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            margin-right: 20px;
+            border-radius: 4px;
+            position: relative;
+            text-align: center;
+        }
+        .flow-step:after {
+            content: "→";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #95a5a6;
+        }
+        .flow-step:last-child:after {
+            content: none;
+        }
+        .nav {
+            margin-bottom: 20px;
+        }
+        .nav a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: #3498db;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
+        .note {
+            background-color: #fef9e7;
+            border-left: 5px solid #f1c40f;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+        <a href="candidate_dashboard.html">Candidate Dashboard</a>
+        <a href="jobs.html">Jobs</a>
+    </div>
+
+    <header>
+        <h1>CareChain Healthcare Job Portal - Testing Guide</h1>
+        <p>Follow this guide to test the complete candidate workflow</p>
+    </header>
+
+    <h2>Overview of Testing Flow</h2>
+    <div class="testing-flow">
+        <div class="flow-step">Register</div>
+        <div class="flow-step">Login</div>
+        <div class="flow-step">Complete Profile</div>
+        <div class="flow-step">Upload Documents</div>
+        <div class="flow-step">View "Proof Ready" Status</div>
+        <div class="flow-step">Search Jobs</div>
+        <div class="flow-step">Apply for Jobs</div>
+    </div>
+
+    <div class="note">
+        <strong>Note:</strong> This testing guide focuses on the candidate user flow. All endpoints have been implemented on the backend and the frontend test UI is configured to use these endpoints.
+    </div>
+
+    <h2>1. Registration and Login</h2>
+    
+    <div class="step">
+        <h4>Register as a new candidate</h4>
+        <p>Navigate to the <a href="register.html">Register</a> page and fill out the form with the following details:</p>
+        <ul>
+            <li>Email: test.candidate@example.com</li>
+            <li>First Name: Test</li>
+            <li>Last Name: Candidate</li>
+            <li>Password: password123</li>
+            <li>Select "I am a candidate"</li>
+        </ul>
+        <p>Click "Register" and verify that the registration is successful.</p>
+    </div>
+    
+    <div class="step">
+        <h4>Login with the new account</h4>
+        <p>Navigate to the <a href="login.html">Login</a> page and enter your credentials:</p>
+        <ul>
+            <li>Email: test.candidate@example.com</li>
+            <li>Password: password123</li>
+        </ul>
+        <p>After successful login, you should be redirected to the Candidate Dashboard.</p>
+    </div>
+
+    <h2>2. Profile Completion</h2>
+    
+    <div class="step">
+        <h4>View Profile Completion Status</h4>
+        <p>On the <a href="candidate_dashboard.html">Candidate Dashboard</a>, check your profile completion status at the top of the page.</p>
+        <p>You should see:</p>
+        <ul>
+            <li>Profile completion percentage</li>
+            <li>Verification status alerts</li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <h4>Complete your profile</h4>
+        <p>Navigate to the <a href="profile.html">Profile</a> page and fill out all the required information:</p>
+        <ul>
+            <li>Professional information</li>
+            <li>Contact details</li>
+            <li>Work experience</li>
+            <li>Education</li>
+            <li>Skills</li>
+            <li>Job preferences</li>
+        </ul>
+        <p>Save your profile and verify that the profile completion percentage increases on the dashboard.</p>
+    </div>
+
+    <h2>3. Document Verification</h2>
+    
+    <div class="step">
+        <h4>Upload required documents</h4>
+        <p>Navigate to the <a href="candidate_verification.html">Document Verification</a> page and upload the required documents:</p>
+        <ul>
+            <li>Identity proof (ID card, passport)</li>
+            <li>Professional certifications</li>
+            <li>Education certificates</li>
+            <li>Work experience letters</li>
+        </ul>
+        <p>Submit the documents for verification and check that the document upload status is updated on the dashboard.</p>
+    </div>
+    
+    <div class="note">
+        <p>In a real environment, the verification process would be manual or automated by the system admin. For testing, we can assume the documents are verified automatically.</p>
+    </div>
+
+    <h2>4. Job Search and Application</h2>
+    
+    <div class="step">
+        <h4>Search for jobs using preferences</h4>
+        <p>Navigate to the <a href="jobs.html">Jobs</a> page and use the search functionality:</p>
+        <ul>
+            <li>Try searching with keywords</li>
+            <li>Filter by location and job type</li>
+            <li>Check the "Use my job preferences" option to see matching jobs</li>
+        </ul>
+        <p>Verify that the search results display matching scores when using your preferences.</p>
+    </div>
+    
+    <div class="step">
+        <h4>Apply for a job</h4>
+        <p>From the search results, click "Apply" on a job that interests you:</p>
+        <ul>
+            <li>Add a personal statement for your application</li>
+            <li>Submit the application</li>
+        </ul>
+        <p>After applying, verify that the job now shows as "Applied" in search results.</p>
+    </div>
+    
+    <div class="step">
+        <h4>View your applications</h4>
+        <p>On the <a href="candidate_dashboard.html">Candidate Dashboard</a>, check the "My Applications" section to see your recent job applications and their status.</p>
+    </div>
+
+    <h2>5. Messaging</h2>
+    
+    <div class="step">
+        <h4>Check messaging functionality</h4>
+        <p>Navigate to the <a href="messages.html">Messages</a> page to test real-time messaging:</p>
+        <ul>
+            <li>The WebSocket connection should be established automatically</li>
+            <li>You should be able to see your conversation threads</li>
+            <li>Messages are delivered in real-time</li>
+            <li>Message delivery and read receipts are working</li>
+        </ul>
+    </div>
+
+    <h2>Known Issues and Troubleshooting</h2>
+    
+    <div class="step">
+        <h4>WebSocket Connection Issues</h4>
+        <p>If you encounter WebSocket connection issues in the messaging system:</p>
+        <ul>
+            <li>Verify that the backend server is running</li>
+            <li>Check that you're using the correct WebSocket URL: <code>/api/ws/chat/</code></li>
+            <li>Make sure your authentication token is valid and not expired</li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <h4>Document Upload Errors</h4>
+        <p>If document uploads fail:</p>
+        <ul>
+            <li>Check that the file size is less than 5MB</li>
+            <li>Ensure the file format is supported (PDF, JPG, PNG)</li>
+            <li>Verify that your account has the correct permissions</li>
+        </ul>
+    </div>
+
+    <h2>Backend API Testing</h2>
+    
+    <div class="step">
+        <h4>API Documentation</h4>
+        <p>All API endpoints are documented and can be tested through the Swagger UI:</p>
+        <ul>
+            <li>Swagger UI: <a href="http://localhost:8000/api/schema/swagger-ui/" target="_blank">http://localhost:8000/api/schema/swagger-ui/</a></li>
+        </ul>
+        <p>The following main API endpoints are available:</p>
+        <ul>
+            <li><code>/api/accounts/login/</code> - Custom login endpoint with profile and verification info</li>
+            <li><code>/api/profiles/job-preferences/</code> - Manage candidate job preferences</li>
+            <li><code>/api/profiles/verification-status/</code> - Check document verification status</li>
+            <li><code>/api/jobs/search/</code> - Search jobs with preference matching</li>
+            <li><code>/api/jobs/applications/</code> - Apply for jobs</li>
+            <li><code>/api/documents/upload/</code> - Upload verification documents</li>
+            <li><code>/api/notifications/</code> - Notification system</li>
+            <li><code>/api/ws/chat/</code> - WebSocket endpoint for real-time messaging</li>
+        </ul>
+    </div>
+
+    <footer style="margin-top: 50px; text-align: center; color: #7f8c8d; font-size: 14px; border-top: 1px solid #eee; padding-top: 20px;">
+        <p>CareChain Healthcare Job Portal - Testing Guide</p>
+    </footer>
+
+    <script>
+        // Check login status and update links accordingly
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            const userJson = localStorage.getItem('user');
+            
+            if (token && userJson) {
+                const user = JSON.parse(userJson);
+                
+                // Update login link to logout if user is logged in
+                const loginLink = document.querySelector('a[href="login.html"]');
+                if (loginLink) {
+                    loginLink.textContent = 'Logout';
+                    loginLink.href = '#';
+                    loginLink.onclick = function() {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('refreshToken');
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('candidateProfile');
+                        localStorage.removeItem('verificationStatus');
+                        window.location.href = 'login.html';
+                        return false;
+                    };
+                }
+                
+                // Hide register link if user is logged in
+                const registerLink = document.querySelector('a[href="register.html"]');
+                if (registerLink) {
+                    registerLink.style.display = 'none';
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

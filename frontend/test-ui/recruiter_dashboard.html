@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruiter Dashboard - CareChain</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .dashboard-container { background: var(--light-bg); min-height: 100vh; }
+        .dashboard-content { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+        .dashboard-header { margin-bottom: 2rem; }
+        .dashboard-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .dashboard-subtitle { color: var(--text-secondary); }
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.5rem; display: flex; flex-direction: column; align-items: flex-start; }
+        .stat-title { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.5rem; }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); }
+        .profile-section, .verification-section { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.5rem; margin-bottom: 2rem; }
+        .profile-title, .verification-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
+        .profile-info { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+        .profile-info-item { margin-bottom: 0.5rem; }
+        .badge-status { display: inline-block; padding: 0.3rem 0.9rem; border-radius: 1rem; font-size: 0.85rem; font-weight: 500; }
+        .badge-verified { background: var(--success-color); color: white; }
+        .badge-pending { background: var(--warning-color); color: white; }
+        .badge-rejected { background: var(--danger-color); color: white; }
+        .jobs-section, .applications-section { background: white; border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 1.5rem; margin-bottom: 2rem; }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; }
+        .job-list, .application-list { display: grid; gap: 1rem; }
+        .job-card, .application-card { background: var(--light-bg); border-radius: var(--radius); padding: 1rem 1.5rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
+        .job-title, .application-title { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+        .job-employer, .application-candidate { color: var(--text-secondary); font-size: 0.95rem; }
+        .job-info, .application-info { display: flex; gap: 1.5rem; margin: 0.5rem 0; font-size: 0.95rem; color: var(--text-secondary); }
+        .job-actions, .application-actions { margin-top: 0.5rem; }
+        .btn-action { background: var(--primary-color); color: white; border: none; border-radius: var(--radius); padding: 0.5rem 1.2rem; font-size: 0.95rem; cursor: pointer; }
+        .btn-action:hover { background: var(--primary-dark); }
+        @media (max-width: 768px) { .dashboard-content { padding: 1rem 0.5rem; } .stats-cards { grid-template-columns: 1fr; } .profile-info { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="index.html" class="logo"><i class="fas fa-heartbeat"></i><span>CareChain</span></a>
+        </div>
+            <nav class="nav">
+        <a href="index.html">Home</a>
+                <a href="jobs_new.html">Jobs</a>
+        <a href="profile.html">Profile</a>
+                <a href="recruiter_dashboard.html" class="active">Dashboard</a>
+        <a href="messages.html">Messages</a>
+            </nav>
+            <div class="header-right">
+                <div class="user-menu">
+                    <span id="userName">User</span>
+                    <button id="logoutBtn" class="btn-logout"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+    </div>
+    </header>
+    <div class="dashboard-container">
+        <div class="dashboard-content">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Welcome, <span id="recruiterName">Recruiter</span></h1>
+                <p class="dashboard-subtitle">Your dashboard for managing jobs and applications</p>
+    </div>
+            <div class="stats-cards">
+                <div class="stat-card"><div class="stat-title">Jobs Posted</div><div class="stat-value" id="jobsPosted">0</div></div>
+                <div class="stat-card"><div class="stat-title">Applications</div><div class="stat-value" id="applicationsCount">0</div></div>
+                <div class="stat-card"><div class="stat-title">Verification Status</div><div class="stat-value" id="verificationStatus"><span class="badge-status badge-pending">Pending</span></div></div>
+            </div>
+            <div class="profile-section">
+                <div class="profile-title">Hospital Information</div>
+                <div class="profile-info" id="profileInfo"></div>
+            </div>
+            <div class="verification-section" id="verificationSection"></div>
+            <div class="jobs-section">
+                <div class="section-title">Your Jobs</div>
+                <div class="job-list" id="jobsList"></div>
+            </div>
+            <div class="applications-section">
+                <div class="section-title">Recent Applications</div>
+                <div class="application-list" id="applicationsList"></div>
+            </div>
+        </div>
+    </div>
+    <script src="js/api-config.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script>
+    // JS logic will be added after UI refactor for data loading, jobs, applications, and verification
+    </script>
+</body>
+</html> 

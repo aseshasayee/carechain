@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login - CareChain</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-info { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Debug Login Test</h1>
+    
+    <div class="debug-info">
+        <h3>API Configuration Test</h3>
+        <div id="apiConfigInfo"></div>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Login Test</h3>
+        <input type="email" id="email" placeholder="Email" value="candidate@test.com">
+        <input type="password" id="password" placeholder="Password" value="password123">
+        <select id="role">
+            <option value="candidate">Candidate</option>
+            <option value="recruiter">Recruiter</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="debug-info">
+        <h3>Manual URL Test</h3>
+        <button onclick="testManualUrls()">Test Manual URLs</button>
+        <div id="manualResult"></div>
+    </div>
+
+    <script src="js/api-config.js"></script>
+    <script>
+        // Test API configuration
+        function testApiConfig() {
+            const info = document.getElementById('apiConfigInfo');
+            
+            if (typeof API_CONFIG === 'undefined') {
+                info.innerHTML = '<div class="error">❌ API_CONFIG is not defined!</div>';
+                return;
+            }
+            
+            info.innerHTML = `
+                <div class="success">✅ API_CONFIG loaded successfully</div>
+                <p><strong>Base URL:</strong> ${API_CONFIG.BASE_URL}</p>
+                <p><strong>Candidate Login URL:</strong> ${API_CONFIG.getApiUrl(API_CONFIG.ENDPOINTS.AUTH.CANDIDATE_LOGIN)}</p>
+                <p><strong>Recruiter Login URL:</strong> ${API_CONFIG.getApiUrl(API_CONFIG.ENDPOINTS.AUTH.RECRUITER_LOGIN)}</p>
+                <p><strong>Admin Login URL:</strong> ${API_CONFIG.getApiUrl(API_CONFIG.ENDPOINTS.AUTH.ADMIN_LOGIN)}</p>
+            `;
+        }
+        
+        // Test login
+        async function testLogin() {
+            const result = document.getElementById('loginResult');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            
+            result.innerHTML = '<p>Testing login...</p>';
+            
+            try {
+                let endpoint;
+                switch (role) {
+                    case 'candidate':
+                        endpoint = API_CONFIG.ENDPOINTS.AUTH.CANDIDATE_LOGIN;
+                        break;
+                    case 'recruiter':
+                        endpoint = API_CONFIG.ENDPOINTS.AUTH.RECRUITER_LOGIN;
+                        break;
+                    case 'admin':
+                        endpoint = API_CONFIG.ENDPOINTS.AUTH.ADMIN_LOGIN;
+                        break;
+                    default:
+                        endpoint = API_CONFIG.ENDPOINTS.AUTH.CANDIDATE_LOGIN;
+                }
+                
+                const url = API_CONFIG.getApiUrl(endpoint);
+                console.log('Login URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <div class="${response.ok ? 'success' : 'error'}">
+                        <strong>Status:</strong> ${response.status} ${response.statusText}<br>
+                        <strong>URL:</strong> ${url}<br>
+                        <strong>Response:</strong> <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <strong>Error:</strong> ${error.message}<br>
+                        <strong>Stack:</strong> <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        // Test manual URLs
+        async function testManualUrls() {
+            const result = document.getElementById('manualResult');
+            result.innerHTML = '<p>Testing manual URLs...</p>';
+            
+            const urls = [
+                'http://localhost:8000/api/accounts/login/',
+                'http://localhost:8000/api/accounts/recruiter-login/',
+                'http://localhost:8000/api/accounts/admin-login/'
+            ];
+            
+            let results = '';
+            
+            for (const url of urls) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email: 'test@test.com', password: 'test' })
+                    });
+                    
+                    results += `
+                        <div class="${response.ok ? 'success' : 'error'}">
+                            <strong>${url}:</strong> ${response.status} ${response.statusText}
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div class="error">
+                            <strong>${url}:</strong> ${error.message}
+                        </div>
+                    `;
+                }
+            }
+            
+            result.innerHTML = results;
+        }
+        
+        // Run tests on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            testApiConfig();
+        });
+    </script>
+</body>
+</html> 

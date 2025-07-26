@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applicant Tracking - CareChain API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .user-info {
+            text-align: right;
+        }
+        .nav {
+            margin-bottom: 20px;
+        }
+        .nav a {
+            margin-right: 10px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f8f8f8;
+            margin-right: 5px;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .job-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fff;
+        }
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .job-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .job-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .job-stat {
+            font-size: 14px;
+            color: #666;
+        }
+        .applicant-list {
+            margin-top: 15px;
+        }
+        .applicant-tabs {
+            display: flex;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .applicant-tab {
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+        .applicant-tab.active {
+            border-bottom: 2px solid #4CAF50;
+            font-weight: bold;
+        }
+        .applicant-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .applicant-card {
+            border: 1px solid #eee;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            background-color: #f9f9f9;
+        }
+        .applicant-card:hover {
+            background-color: #f0f0f0;
+        }
+        .applicant-card img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .applicant-card .initials {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .applicant-card .name {
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+        }
+        .applicant-card .status {
+            position: absolute;
+            bottom: -5px;
+            font-size: 10px;
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+        .candidate-detail {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #fff;
+        }
+        .candidate-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .candidate-header img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 20px;
+        }
+        .candidate-header .initials {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+        .candidate-info h3 {
+            margin: 0 0 5px 0;
+        }
+        .candidate-info p {
+            margin: 0;
+            color: #666;
+        }
+        .candidate-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button.secondary {
+            background-color: #f1f1f1;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        button.warning {
+            background-color: #f44336;
+            color: white;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h4 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            margin: 10px 0;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            overflow: auto;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-applied {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        .status-in-review {
+            background-color: #fff9c4;
+            color: #f57f17;
+        }
+        .status-interviewed {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .status-hired {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+        }
+        .status-rejected {
+            background-color: #ffebee;
+            color: #b71c1c;
+        }
+
+        /* Applicant Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.applied {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+        }
+        
+        .status-badge.in_review {
+            background-color: #fff8e1;
+            color: #ff6f00;
+        }
+        
+        .status-badge.hired {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-badge.rejected {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        /* Applicant Card */
+        .applicant-card {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #fff;
+        }
+        
+        .applicant-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .applicant-name {
+            margin: 0;
+            font-size: 16px;
+        }
+        
+        .applicant-date {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .applicant-details {
+            margin-bottom: 15px;
+        }
+        
+        .detail-group {
+            margin-bottom: 5px;
+        }
+        
+        .detail-group label {
+            font-weight: bold;
+            margin-right: 5px;
+            display: inline;
+        }
+        
+        /* Applicant Actions */
+        .applicant-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .action-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Status Actions */
+        .status-actions {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        
+        .status-actions label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .status-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .status-action {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            background-color: #f8f8f8;
+        }
+        
+        .status-action:hover:not([disabled]) {
+            background-color: #e0e0e0;
+        }
+        
+        .status-action.selected {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .status-action[data-status="applied"] {
+            border-color: #0d47a1;
+            color: #0d47a1;
+        }
+        
+        .status-action[data-status="in_review"] {
+            border-color: #ff6f00;
+            color: #ff6f00;
+        }
+        
+        .status-action[data-status="hired"] {
+            border-color: #2e7d32;
+            color: #2e7d32;
+        }
+        
+        .status-action[data-status="rejected"] {
+            border-color: #c62828;
+            color: #c62828;
+        }
+        
+        .status-action.selected[data-status="applied"] {
+            background-color: #0d47a1;
+            color: white;
+        }
+        
+        .status-action.selected[data-status="in_review"] {
+            background-color: #ff6f00;
+            color: white;
+        }
+        
+        .status-action.selected[data-status="hired"] {
+            background-color: #2e7d32;
+            color: white;
+        }
+        
+        .status-action.selected[data-status="rejected"] {
+            background-color: #c62828;
+            color: white;
+        }
+        
+        /* Applicant tabs */
+        .applicant-tab {
+            padding: 8px 15px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .applicant-tab.active {
+            border-bottom: 2px solid #4CAF50;
+            font-weight: bold;
+        }
+        
+        .applicant-tab .count {
+            display: inline-block;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            padding: 2px 6px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+        
+        .no-applicants {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Applicant Tracking</h1>
+        <div class="user-info">
+            <p>Welcome, <span id="userName">User</span></p>
+            <button id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="recruiter_dashboard.html">Dashboard</a>
+        <a href="recruiter_verification.html">Verification</a>
+        <a href="profile.html">Profile</a>
+        <a href="jobs.html">Jobs</a>
+        <a href="applicant_tracking.html">Applicant Tracking</a>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" data-tab="open-jobs">Open Jobs</div>
+        <div class="tab" data-tab="in-review">In Review</div>
+        <div class="tab" data-tab="closed-jobs">Closed Jobs</div>
+    </div>
+
+    <div id="open-jobs" class="tab-content active">
+        <div id="openJobsList">Loading open jobs...</div>
+    </div>
+
+    <div id="in-review" class="tab-content">
+        <div id="inReviewJobsList">Loading jobs in review...</div>
+    </div>
+
+    <div id="closed-jobs" class="tab-content">
+        <div id="closedJobsList">Loading closed jobs...</div>
+    </div>
+
+    <div id="candidateDetailContainer" class="candidate-detail" style="display: none;">
+        <div id="candidateDetail"></div>
+    </div>
+
+    <div id="error" class="error" style="display: none;"></div>
+    <div id="success" class="success" style="display: none;"></div>
+
+    <h3>Response:</h3>
+    <pre id="response"></pre>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api';
+        let currentUser = null;
+        let token = localStorage.getItem('token');
+        let selectedJob = null;
+        let selectedCandidate = null;
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Token from localStorage:", token);
+            
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Get user from localStorage
+            const userJson = localStorage.getItem('user');
+            console.log("User from localStorage:", userJson);
+            
+            if (userJson) {
+                currentUser = JSON.parse(userJson);
+                
+                // Check if user is a recruiter
+                if (!currentUser.isRecruiter) {
+                    window.location.href = 'unauthorized.html';
+                    return;
+                }
+                
+                // Set user name
+                document.getElementById('userName').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+                
+                // Load jobs
+                loadOpenJobs();
+                loadInReviewJobs();
+                loadClosedJobs();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
+                this.classList.add('active');
+                
+                // Hide all tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Show the selected tab content
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Hide candidate detail
+                document.getElementById('candidateDetailContainer').style.display = 'none';
+            });
+        });
+
+        // Load open jobs
+        async function loadOpenJobs() {
+            try {
+                const response = await fetch(`${API_URL}/jobs/?is_filled=false&is_active=true`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Open jobs:", data);
+                    
+                    if (data.results.length === 0) {
+                        document.getElementById('openJobsList').innerHTML = '<p>No open jobs found.</p>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.results.forEach(job => {
+                        html += createJobCard(job, 'open');
+                    });
+                    
+                    document.getElementById('openJobsList').innerHTML = html;
+                } else {
+                    document.getElementById('openJobsList').innerHTML = '<p>Failed to load open jobs.</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('openJobsList').innerHTML = '<p>Error loading open jobs.</p>';
+            }
+        }
+
+        // Load in-review jobs
+        async function loadInReviewJobs() {
+            try {
+                // In a real app, you would have a filter for in-review jobs
+                // For now, we'll just use all jobs
+                const response = await fetch(`${API_URL}/jobs/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("In-review jobs:", data);
+                    
+                    if (data.results.length === 0) {
+                        document.getElementById('inReviewJobsList').innerHTML = '<p>No jobs in review found.</p>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.results.forEach(job => {
+                        html += createJobCard(job, 'review');
+                    });
+                    
+                    document.getElementById('inReviewJobsList').innerHTML = html;
+                } else {
+                    document.getElementById('inReviewJobsList').innerHTML = '<p>Failed to load jobs in review.</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('inReviewJobsList').innerHTML = '<p>Error loading jobs in review.</p>';
+            }
+        }
+
+        // Load closed jobs
+        async function loadClosedJobs() {
+            try {
+                const response = await fetch(`${API_URL}/jobs/?is_active=false`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Closed jobs:", data);
+                    
+                    if (data.results.length === 0) {
+                        document.getElementById('closedJobsList').innerHTML = '<p>No closed jobs found.</p>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.results.forEach(job => {
+                        html += createJobCard(job, 'closed');
+                    });
+                    
+                    document.getElementById('closedJobsList').innerHTML = html;
+                } else {
+                    document.getElementById('closedJobsList').innerHTML = '<p>Failed to load closed jobs.</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('closedJobsList').innerHTML = '<p>Error loading closed jobs.</p>';
+            }
+        }
+
+        // Create job card
+        function createJobCard(job, status) {
+            return `
+                <div class="job-card" data-job-id="${job.id}">
+                    <div class="job-header">
+                        <h3 class="job-title">${job.title}</h3>
+                        <span>Posted on: ${formatDate(job.created_at)}</span>
+                    </div>
+                    <div class="job-stats">
+                        <span class="job-stat">Views: 365</span>
+                        <span class="job-stat">Department: ${job.department || 'Not specified'}</span>
+                        <span class="job-stat">Location: ${job.location || 'Not specified'}</span>
+                    </div>
+                    <button class="view-applicants-btn" onclick="loadApplicantsForJob(${job.id})">View Applicants</button>
+                    <div id="applicants-${job.id}" class="applicant-list" style="display: none;">
+                        <div class="applicant-tabs">
+                            <div class="applicant-tab active" data-status="all" onclick="filterApplicants(${job.id}, 'all')">All</div>
+                            <div class="applicant-tab" data-status="applied" onclick="filterApplicants(${job.id}, 'applied')">Applied</div>
+                            <div class="applicant-tab" data-status="in_review" onclick="filterApplicants(${job.id}, 'in_review')">In Review</div>
+                            <div class="applicant-tab" data-status="interviewed" onclick="filterApplicants(${job.id}, 'interviewed')">Interviewed</div>
+                            <div class="applicant-tab" data-status="hired" onclick="filterApplicants(${job.id}, 'hired')">Hired</div>
+                            <div class="applicant-tab" data-status="rejected" onclick="filterApplicants(${job.id}, 'rejected')">Rejected</div>
+                        </div>
+                        <div id="applicant-cards-${job.id}" class="applicant-cards">
+                            <p>Loading applicants...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load applicants for a job
+        function loadApplicantsForJob(jobId) {
+            const applicantsContainer = document.getElementById(`applicants-${jobId}`);
+            if (!applicantsContainer) {
+                console.error(`Applicants container for job ${jobId} not found`);
+                return;
+            }
+
+            applicantsContainer.innerHTML = '<p class="loading">Loading applicants...</p>';
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                applicantsContainer.innerHTML = '<p class="error">Please log in to view applicants</p>';
+                return;
+            }
+
+            fetch(`${API_URL}/jobs/${jobId}/applications/`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+            })
+            .then(handleResponse)
+            .then(applications => {
+                if (applications.length === 0) {
+                    applicantsContainer.innerHTML = '<p class="no-applicants">No applications received for this job yet.</p>';
+                    return;
+                }
+
+                // Create filter tabs
+                const tabsHTML = `
+                    <div class="applicant-tabs">
+                        <div class="applicant-tab active" data-status="all">
+                            All <span class="count">${applications.length}</span>
+                        </div>
+                        <div class="applicant-tab" data-status="applied">
+                            Applied <span class="count">0</span>
+                        </div>
+                        <div class="applicant-tab" data-status="in_review">
+                            In Review <span class="count">0</span>
+                        </div>
+                        <div class="applicant-tab" data-status="hired">
+                            Hired <span class="count">0</span>
+                        </div>
+                        <div class="applicant-tab" data-status="rejected">
+                            Rejected <span class="count">0</span>
+                        </div>
+                    </div>
+                `;
+                
+                let applicantsHTML = tabsHTML;
+                
+                // Create applicant cards
+                applications.forEach(application => {
+                    // Ensure we have a proper name for the candidate
+                    const candidateName = application.candidate_name || 'Anonymous Candidate';
+                    
+                    // Handle missing status by defaulting to 'applied'
+                    const status = application.status || 'applied';
+                    const statusClass = status.toLowerCase().replace(' ', '_');
+                    
+                    // Create initials for the avatar
+                    const initials = getInitials(candidateName);
+                    
+                    // Format the application date
+                    const appliedDate = formatDate(application.created_at || application.applied_date);
+                    
+                    applicantsHTML += `
+                        <div class="applicant-card" data-status="${status}" data-application-id="${application.id}">
+                            <div class="applicant-header">
+                                <div class="applicant-avatar">${initials}</div>
+                                <div class="applicant-info">
+                                    <div class="applicant-name">${candidateName}</div>
+                                    <div class="applicant-meta">
+                                        <span class="status-badge ${statusClass}">${formatStatus(status)}</span>
+                                        <span class="applied-date">Applied on: ${appliedDate}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="applicant-details">
+                                <div class="detail-item">
+                                    <span class="label">Email:</span>
+                                    <span class="value">${application.candidate_email || 'Not provided'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Phone:</span>
+                                    <span class="value">${application.candidate_phone || 'Not provided'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Experience:</span>
+                                    <span class="value">${application.candidate_experience || 'Not specified'} years</span>
+                                </div>
+                                ${application.cover_letter ? 
+                                    `<div class="detail-item">
+                                        <span class="label">Cover Letter:</span>
+                                        <span class="value">${application.cover_letter}</span>
+                                    </div>` : ''
+                                }
+                            </div>
+                            
+                            <div class="applicant-actions">
+                                <button class="action-btn" onclick="viewCandidateDetail('${application.candidate_id}', '${application.id}')">
+                                    View Profile
+                                </button>
+                                <button class="action-btn" onclick="window.directMessageCandidate('${candidateName}', ${application.id})">
+                                    Message
+                                </button>
+                            </div>
+                            
+                            <div class="status-actions">
+                                <span>Status:</span>
+                                <button class="status-action ${status === 'applied' ? 'selected' : ''}" 
+                                        data-status="applied" 
+                                        data-application-id="${application.id}" 
+                                        ${status === 'applied' ? 'disabled' : ''}>Applied</button>
+                                <button class="status-action ${status === 'in_review' ? 'selected' : ''}" 
+                                        data-status="in_review" 
+                                        data-application-id="${application.id}" 
+                                        ${status === 'in_review' ? 'disabled' : ''}>In Review</button>
+                                <button class="status-action ${status === 'hired' ? 'selected' : ''}" 
+                                        data-status="hired" 
+                                        data-application-id="${application.id}" 
+                                        ${status === 'hired' ? 'disabled' : ''}>Hired</button>
+                                <button class="status-action ${status === 'rejected' ? 'selected' : ''}" 
+                                        data-status="rejected" 
+                                        data-application-id="${application.id}" 
+                                        ${status === 'rejected' ? 'disabled' : ''}>Rejected</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                applicantsContainer.innerHTML = applicantsHTML;
+                
+                // Add event listeners to applicant tabs
+                applicantsContainer.querySelectorAll('.applicant-tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        const status = this.getAttribute('data-status');
+                        const jobApplicantsContainer = this.closest('.job-card').querySelector('.applicant-list');
+                        
+                        // Hide/show applicants based on status
+                        jobApplicantsContainer.querySelectorAll('.applicant-card').forEach(card => {
+                            if (status === 'all' || card.getAttribute('data-status') === status) {
+                                card.style.display = 'block';
+                    } else {
+                                card.style.display = 'none';
+                            }
+                        });
+                        
+                        // Update active tab
+                        jobApplicantsContainer.querySelectorAll('.applicant-tab').forEach(t => {
+                            t.classList.remove('active');
+                        });
+                        this.classList.add('active');
+                    });
+                });
+                
+                // Update counts
+                const statusCounts = {
+                    all: applications.length,
+                    applied: 0,
+                    in_review: 0,
+                    hired: 0,
+                    rejected: 0
+                };
+                
+                applications.forEach(app => {
+                    const status = app.status || 'applied';
+                    if (statusCounts[status] !== undefined) {
+                        statusCounts[status]++;
+                    }
+                });
+                
+                // Update count in tabs
+                for (const [status, count] of Object.entries(statusCounts)) {
+                    const countElement = applicantsContainer.querySelector(`.applicant-tab[data-status="${status}"] .count`);
+                    if (countElement) {
+                        countElement.textContent = count;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading applicants:', error);
+                applicantsContainer.innerHTML = `<p class="error">Failed to load applicants: ${error.message}</p>`;
+            });
+        }
+
+        // Filter applicants
+        window.filterApplicants = function(jobId, status) {
+            // Update active tab
+            const tabs = document.querySelectorAll(`#applicants-${jobId} .applicant-tab`);
+            tabs.forEach(tab => {
+                if (tab.getAttribute('data-status') === status) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Filter applicant cards
+            const cards = document.querySelectorAll(`#applicant-cards-${jobId} .applicant-card`);
+            cards.forEach(card => {
+                if (status === 'all' || card.getAttribute('data-status') === status) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
+
+        // Create applicant card
+        function createApplicantCard(application) {
+            const profileId = application.profile;
+            const status = application.status || 'applied';
+            const initials = getInitials(application.candidate_name || `Applicant ${profileId}`);
+            
+            return `
+                <div class="applicant-card" data-status="${status}" onclick="viewCandidateDetail(${profileId}, ${application.id})">
+                    <div class="initials">${initials}</div>
+                    <div class="name">${application.candidate_name || `Applicant ${profileId}`}</div>
+                    <div class="status">${formatStatus(status)}</div>
+                </div>
+            `;
+        }
+
+        // View candidate detail
+        window.viewCandidateDetail = async function(profileId, applicationId) {
+            selectedCandidate = { profileId, applicationId };
+            
+            try {
+                // Get candidate profile
+                const profileResponse = await fetch(`${API_URL}/profiles/candidate/${profileId}/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                // Get application details
+                const applicationResponse = await fetch(`${API_URL}/jobs/applications/${applicationId}/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                let profileData = {};
+                let applicationData = {};
+                
+                if (profileResponse.ok) {
+                    profileData = await profileResponse.json();
+                    console.log("Candidate profile:", profileData);
+                } else {
+                    console.error("Failed to load candidate profile");
+                }
+                
+                if (applicationResponse.ok) {
+                    applicationData = await applicationResponse.json();
+                    console.log("Application data:", applicationData);
+                } else {
+                    console.error("Failed to load application data");
+                }
+                
+                // Combine data and display
+                displayCandidateDetail(profileData, applicationData);
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error').textContent = 'Error loading candidate details';
+                document.getElementById('error').style.display = 'block';
+            }
+        };
+
+        // Display candidate detail
+        function displayCandidateDetail(profile, application) {
+            const candidateName = profile.full_name || profile.user?.email || application.candidate_name || `Applicant ${profile.id}`;
+            const initials = getInitials(candidateName);
+            const status = application.status || 'applied';
+            
+            let html = `
+                <div class="candidate-header">
+                    <div class="initials">${initials}</div>
+                    <div class="candidate-info">
+                        <h3>${candidateName}</h3>
+                        <p>${profile.headline || 'Healthcare Professional'}</p>
+                        <p>${profile.location || 'Location not specified'}</p>
+                        <span class="status-badge status-${status.replace('_', '-')}">${formatStatus(status)}</span>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h4>Application Details</h4>
+                    <p><strong>Applied on:</strong> ${formatDate(application.applied_on)}</p>
+                    <p><strong>Personal Statement:</strong></p>
+                    <p>${application.personal_statement || 'No personal statement provided.'}</p>
+                </div>
+                
+                <div class="section">
+                    <h4>Contact Information</h4>
+                    <p><strong>Email:</strong> ${profile.user?.email || 'Not available'}</p>
+                    <p><strong>Phone:</strong> ${profile.contact_number || 'Not available'}</p>
+                </div>
+                
+                <div class="section">
+                    <h4>Experience & Qualifications</h4>
+                    <p>${profile.summary || 'No summary provided.'}</p>
+                </div>
+                
+                <div class="candidate-actions">
+                    <button onclick="updateApplicationStatus(${application.id}, 'in_review')">Mark In Review</button>
+                    <button onclick="updateApplicationStatus(${application.id}, 'interviewed')">Mark Interviewed</button>
+                    <button onclick="updateApplicationStatus(${application.id}, 'hired')">Hire Candidate</button>
+                    <button class="secondary" onclick="directMessageCandidate('${application.candidate_name}', ${application.id})">Message Candidate</button>
+                    <button class="warning" onclick="updateApplicationStatus(${application.id}, 'rejected')">Reject</button>
+                </div>
+            `;
+            
+            document.getElementById('candidateDetail').innerHTML = html;
+            document.getElementById('candidateDetailContainer').style.display = 'block';
+            
+            // Scroll to candidate detail
+            document.getElementById('candidateDetailContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Update application status
+        window.updateApplicationStatus = async function(applicationId, status) {
+            try {
+                console.log(`Updating application ${applicationId} to status: ${status}`);
+                console.log(`API URL: ${API_URL}/jobs/applications/${applicationId}/`);
+                
+                const response = await fetch(`${API_URL}/jobs/applications/${applicationId}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status })
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Updated application:", data);
+                    
+                    document.getElementById('success').textContent = `Application status updated to ${formatStatus(status)}`;
+                    document.getElementById('success').style.display = 'block';
+                    
+                    // Reload applicants for the job
+                    if (selectedJob) {
+                        loadApplicantsForJob(selectedJob);
+                    }
+                    
+                    // Update candidate detail view
+                    if (selectedCandidate) {
+                        viewCandidateDetail(selectedCandidate.profileId, selectedCandidate.applicationId);
+                    }
+                } else {
+                    let errorMessage = 'Failed to update application status';
+                    
+                    try {
+                        const errorData = await response.json();
+                        console.error('Error data:', errorData);
+                        errorMessage = errorData.detail || errorData.status || errorMessage;
+                    } catch (jsonError) {
+                        console.error('Error parsing error response:', jsonError);
+                    }
+                    
+                    document.getElementById('error').textContent = errorMessage;
+                    document.getElementById('error').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error').textContent = 'An error occurred while updating application status: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+            }
+        };
+
+        // Direct message candidate function (simplified approach)
+        window.directMessageCandidate = function(candidateName, applicationId) {
+            try {
+                // Use application data directly without any API calls
+                window.location.href = `messages.html?candidateName=${encodeURIComponent(candidateName)}&application=${applicationId}`;
+            } catch (error) {
+                console.error('Error navigating to messages:', error);
+                document.getElementById('error').textContent = 'Error opening messaging interface';
+                document.getElementById('error').style.display = 'block';
+            }
+        };
+
+        // Get initials from name
+        function getInitials(name) {
+            if (!name) return '?';
+            
+            const parts = name.split(' ');
+            if (parts.length === 1) {
+                return parts[0].charAt(0).toUpperCase();
+            } else {
+                return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+            }
+        }
+
+        // Format status
+        function formatStatus(status) {
+            if (!status) return 'Unknown';
+            
+            const statusMap = {
+                'applied': 'Applied',
+                'in_review': 'In Review',
+                'interviewed': 'Interviewed',
+                'hired': 'Hired',
+                'rejected': 'Rejected'
+            };
+            
+            return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return 'Not specified';
+            
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+
+        // Filter applicants by status
+        function filterApplicantsByStatus(status) {
+            const applicantCards = document.querySelectorAll('.applicant-card');
+            
+            applicantCards.forEach(card => {
+                if (status === 'all' || card.getAttribute('data-status') === status) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Update active tab
+            document.querySelectorAll('.applicant-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.applicant-tab[data-status="${status}"]`).classList.add('active');
+            
+            // Update counts
+            updateStatusCounts();
+        }
+
+        // Update status counts
+        function updateStatusCounts() {
+            const applicantCards = document.querySelectorAll('.applicant-card');
+            const counts = {
+                all: applicantCards.length,
+                applied: 0,
+                in_review: 0,
+                hired: 0,
+                rejected: 0
+            };
+            
+            applicantCards.forEach(card => {
+                const status = card.getAttribute('data-status');
+                if (counts[status] !== undefined) {
+                    counts[status]++;
+                }
+            });
+            
+            // Update count in tabs
+            for (const [status, count] of Object.entries(counts)) {
+                const countElement = document.querySelector(`.applicant-tab[data-status="${status}"] .count`);
+                if (countElement) {
+                    countElement.textContent = count;
+                }
+            }
+        }
+
+        // Update applicant status
+        function updateApplicantStatus(applicationId, newStatus) {
+            const token = localStorage.getItem('token');
+            
+            fetch(`${API_URL}/jobs/applications/${applicationId}/`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status: newStatus })
+            })
+            .then(handleResponse)
+            .then(data => {
+                // Update the UI
+                const applicantCard = document.querySelector(`.applicant-card[data-application-id="${applicationId}"]`);
+                if (applicantCard) {
+                    applicantCard.setAttribute('data-status', newStatus);
+                    
+                    // Update status badge
+                    const statusBadge = applicantCard.querySelector('.status-badge');
+                    statusBadge.className = `status-badge ${newStatus}`;
+                    statusBadge.textContent = newStatus.replace('_', ' ').toUpperCase();
+                    
+                    // Disable selected button and enable others
+                    applicantCard.querySelectorAll('.status-action').forEach(btn => {
+                        if (btn.getAttribute('data-status') === newStatus) {
+                            btn.disabled = true;
+                            btn.classList.add('selected');
+                        } else {
+                            btn.disabled = false;
+                            btn.classList.remove('selected');
+                        }
+                    });
+                    
+                    // Update counts
+                    updateStatusCounts();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating application status:', error);
+                document.getElementById('error').textContent = 'Error updating application status.';
+                document.getElementById('error').style.display = 'block';
+            });
+        }
+
+        // Add event listeners for status filters and actions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to status tabs
+            document.querySelectorAll('.applicant-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const status = this.getAttribute('data-status');
+                    filterApplicantsByStatus(status);
+                });
+            });
+            
+            // Add event listeners to status action buttons
+            document.addEventListener('click', function(event) {
+                if (event.target.classList.contains('status-action') || event.target.closest('.status-action')) {
+                    const button = event.target.classList.contains('status-action') ? event.target : event.target.closest('.status-action');
+                    const applicationId = button.getAttribute('data-application-id');
+                    const newStatus = button.getAttribute('data-status');
+                    
+                    if (applicationId && newStatus) {
+                        updateApplicantStatus(applicationId, newStatus);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
