@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jobs - CareChain</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .jobs-container {
+            padding: 2rem 0;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .filters-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .filter-input {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+        }
+        
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        
+        .jobs-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .job-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-color);
+        }
+        
+        .job-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .job-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .job-company {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+        
+        .job-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        
+        .job-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .job-body {
+            padding: 1.5rem;
+        }
+        
+        .job-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .job-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .job-tag {
+            padding: 0.25rem 0.75rem;
+            background: var(--light-bg);
+            color: var(--text-secondary);
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .job-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .job-salary {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--success-color);
+        }
+        
+        .job-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn-apply {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .btn-apply:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-apply:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .btn-bookmark {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-bookmark:hover {
+            background: var(--light-bg);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .btn-bookmark.bookmarked {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+        }
+        
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-secondary);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-actions {
+                justify-content: stretch;
+            }
+            
+            .filter-actions .btn {
+                flex: 1;
+            }
+            
+            .job-footer {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .job-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header will be inserted by CommonHeader -->
+    
+    <div class="jobs-container">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Healthcare Jobs</h1>
+                <div class="page-actions" id="pageActions">
+                    <!-- Actions will be populated based on user role -->
+                </div>
+            </div>
+            
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label class="filter-label" for="searchInput">Search Jobs</label>
+                        <input type="text" id="searchInput" class="filter-input" placeholder="Job title, keywords, company...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="locationFilter">Location</label>
+                        <input type="text" id="locationFilter" class="filter-input" placeholder="City, state, remote...">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="typeFilter">Job Type</label>
+                        <select id="typeFilter" class="filter-input">
+                            <option value="">All Types</option>
+                            <option value="full-time">Full Time</option>
+                            <option value="part-time">Part Time</option>
+                            <option value="contract">Contract</option>
+                            <option value="remote">Remote</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label" for="experienceFilter">Experience</label>
+                        <select id="experienceFilter" class="filter-input">
+                            <option value="">All Levels</option>
+                            <option value="entry">Entry Level</option>
+                            <option value="mid">Mid Level</option>
+                            <option value="senior">Senior Level</option>
+                            <option value="executive">Executive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-outline" onclick="clearFilters()">Clear</button>
+                    <button class="btn btn-primary" onclick="applyFilters()">Search Jobs</button>
+                </div>
+            </div>
+            
+            <!-- Jobs Grid -->
+            <div id="jobsContainer">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination" id="pagination" style="display: none;">
+                <!-- Pagination will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api-config.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/api-helper-enhanced.js"></script>
+    <script src="js/common-header.js"></script>
+    
+    <script>
+        let currentPage = 1;
+        let totalPages = 1;
+        let jobs = [];
+        let filters = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeJobsPage();
+        });
+
+        function initializeJobsPage() {
+            setupPageActions();
+            loadJobs();
+            
+            // Add search event listeners
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    applyFilters();
+                }
+            });
+        }
+
+        function setupPageActions() {
+            const pageActions = document.getElementById('pageActions');
+            const role = AuthHelper.getUserRole();
+            
+            if (role === 'recruiter') {
+                pageActions.innerHTML = `
+                    <button class="btn btn-primary" onclick="showJobForm()">
+                        <i class="fas fa-plus"></i> Post New Job
+                    </button>
+                    <a href="jobs.html?view=my" class="btn btn-outline">
+                        <i class="fas fa-briefcase"></i> My Jobs
+                    </a>
+                `;
+            } else {
+                pageActions.innerHTML = `
+                    <button class="btn btn-outline" onclick="toggleView('grid')">
+                        <i class="fas fa-th"></i> Grid View
+                    </button>
+                    <button class="btn btn-outline" onclick="toggleView('list')">
+                        <i class="fas fa-list"></i> List View
+                    </button>
+                `;
+            }
+        }
+
+        async function loadJobs(page = 1) {
+            try {
+                showLoading();
+                
+                const searchParams = {
+                    ...filters,
+                    page: page
+                };
+                
+                const response = await APIHelper.jobs.getAll(page, filters);
+                
+                if (response.success) {
+                    jobs = response.data.results || response.data;
+                    totalPages = response.data.total_pages || 1;
+                    currentPage = page;
+                    
+                    renderJobs();
+                    renderPagination();
+                } else {
+                    showError('Failed to load jobs: ' + APIHelper.handleError(response));
+                }
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                showError('Network error. Please try again.');
+            }
+        }
+
+        function renderJobs() {
+            const container = document.getElementById('jobsContainer');
+            
+            if (!jobs || jobs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <h3>No jobs found</h3>
+                        <p>Try adjusting your search criteria or check back later for new opportunities.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const jobsGrid = document.createElement('div');
+            jobsGrid.className = 'jobs-grid';
+            
+            jobs.forEach(job => {
+                const jobCard = createJobCard(job);
+                jobsGrid.appendChild(jobCard);
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(jobsGrid);
+        }
+
+        function createJobCard(job) {
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            card.onclick = () => viewJobDetails(job.id);
+            
+            const postedDate = new Date(job.created_at || job.posted_at).toLocaleDateString();
+            const salary = job.salary ? `$${job.salary.toLocaleString()}` : 'Salary not specified';
+            
+            card.innerHTML = `
+                <div class="job-header">
+                    <h3 class="job-title">${job.title}</h3>
+                    <div class="job-company">${job.company_name || job.hospital_name || 'Healthcare Facility'}</div>
+                    <div class="job-meta">
+                        <div class="job-meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${job.location || 'Location not specified'}</span>
+                        </div>
+                        <div class="job-meta-item">
+                            <i class="fas fa-clock"></i>
+                            <span>${job.job_type || 'Full-time'}</span>
+                        </div>
+                        <div class="job-meta-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Posted ${postedDate}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="job-body">
+                    <div class="job-description">
+                        ${job.description ? (job.description.length > 150 ? 
+                            job.description.substring(0, 150) + '...' : 
+                            job.description) : 'No description available'}
+                    </div>
+                    
+                    <div class="job-tags">
+                        ${job.required_skills ? 
+                            job.required_skills.split(',').slice(0, 3).map(skill => 
+                                `<span class="job-tag">${skill.trim()}</span>`
+                            ).join('') : 
+                            '<span class="job-tag">Healthcare</span>'}
+                    </div>
+                </div>
+                
+                <div class="job-footer">
+                    <div class="job-salary">${salary}</div>
+                    <div class="job-actions">
+                        ${AuthHelper.isLoggedIn() && AuthHelper.isRole('candidate') ? `
+                            <button class="btn-apply" onclick="event.stopPropagation(); applyToJob('${job.id}')">
+                                <i class="fas fa-paper-plane"></i> Apply
+                            </button>
+                        ` : ''}
+                        <button class="btn-bookmark ${job.is_bookmarked ? 'bookmarked' : ''}" 
+                                onclick="event.stopPropagation(); toggleBookmark('${job.id}')">
+                            <i class="fas fa-bookmark"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+            
+            pagination.style.display = 'flex';
+            pagination.innerHTML = '';
+            
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.onclick = () => loadJobs(currentPage - 1);
+            pagination.appendChild(prevBtn);
+            
+            // Page numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.onclick = () => loadJobs(i);
+                pagination.appendChild(pageBtn);
+            }
+            
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.onclick = () => loadJobs(currentPage + 1);
+            pagination.appendChild(nextBtn);
+        }
+
+        function applyFilters() {
+            filters = {
+                search: document.getElementById('searchInput').value,
+                location: document.getElementById('locationFilter').value,
+                job_type: document.getElementById('typeFilter').value,
+                experience_level: document.getElementById('experienceFilter').value
+            };
+            
+            // Remove empty filters
+            Object.keys(filters).forEach(key => {
+                if (!filters[key]) {
+                    delete filters[key];
+                }
+            });
+            
+            currentPage = 1;
+            loadJobs(1);
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('locationFilter').value = '';
+            document.getElementById('typeFilter').value = '';
+            document.getElementById('experienceFilter').value = '';
+            
+            filters = {};
+            currentPage = 1;
+            loadJobs(1);
+        }
+
+        async function applyToJob(jobId) {
+            if (!AuthHelper.isLoggedIn()) {
+                alert('Please login to apply for jobs.');
+                window.location.href = 'login_enhanced.html';
+                return;
+            }
+            
+            if (!AuthHelper.isRole('candidate')) {
+                alert('Only candidates can apply for jobs.');
+                return;
+            }
+            
+            try {
+                const response = await APIHelper.jobs.apply(jobId);
+                
+                if (response.success) {
+                    alert('Application submitted successfully!');
+                    // Refresh the job to update button state
+                    loadJobs(currentPage);
+                } else {
+                    alert('Failed to submit application: ' + APIHelper.handleError(response));
+                }
+            } catch (error) {
+                console.error('Error applying to job:', error);
+                alert('Network error. Please try again.');
+            }
+        }
+
+        function toggleBookmark(jobId) {
+            // This would implement bookmark functionality
+            console.log('Toggle bookmark for job:', jobId);
+            alert('Bookmark functionality coming soon!');
+        }
+
+        function viewJobDetails(jobId) {
+            window.location.href = `job_details.html?id=${jobId}`;
+        }
+
+        function showJobForm() {
+            // This would show a job posting form for recruiters
+            alert('Job posting form coming soon!');
+        }
+
+        function toggleView(viewType) {
+            // This would switch between grid and list views
+            console.log('Toggle view:', viewType);
+        }
+
+        function showLoading() {
+            document.getElementById('jobsContainer').innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            document.getElementById('jobsContainer').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>Error Loading Jobs</h3>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="loadJobs()">Try Again</button>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -10,20 +10,23 @@ const ApiHelper = {
                 AuthHelper.getToken() : 
                 localStorage.getItem('token');
             
-            if (!token) {
+            if (!token && !options.skipAuth) {
                 throw new Error('No authentication token found');
             }
             
             // Get API URL from API_CONFIG if available
             const url = typeof API_CONFIG !== 'undefined' ? 
                 API_CONFIG.getApiUrl(endpoint) : 
-                endpoint;
+                `http://localhost:8000/api${endpoint}`;
             
             console.log(`API Request: ${options.method || 'GET'} ${url}`);
             
             // Set default headers
             const headers = options.headers || {};
-            headers['Authorization'] = `Bearer ${token}`;
+            
+            if (token && !options.skipAuth) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
             
             if ((options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH') && 
                 options.body && 

@@ -7,27 +7,28 @@ const API_CONFIG = {
     ENDPOINTS: {
         // Authentication
         AUTH: {
-            CANDIDATE_LOGIN: '/accounts/login/',
+            LOGIN: '/accounts/login/',
             RECRUITER_LOGIN: '/accounts/recruiter-login/',
             ADMIN_LOGIN: '/accounts/admin-login/',
-            REFRESH_TOKEN: '/accounts/token/refresh/',
             REGISTER: '/accounts/register/',
-            PASSWORD_RESET: '/accounts/password-reset/',
+            VERIFY_EMAIL: '/accounts/verify-email/',
+            PROFILE: '/accounts/profile/',
+            CHANGE_PASSWORD: '/accounts/change-password/',
         },
         
         // Admin
         ADMIN: {
+            USERS: '/admin/users/',
             DASHBOARD_STATS: '/admin/dashboard-stats/',
             RECENT_ACTIVITY: '/admin/recent-activity/',
-            USERS: '/admin/users/',
         },
         
         // Profiles
         PROFILES: {
-            CANDIDATE_PROFILE: '/profiles/candidate/',
-            RECRUITER_PROFILE: '/profiles/recruiter/',
-            HOSPITAL_PROFILE: '/profiles/hospital/',
-            CANDIDATE_VERIFICATION: '/profiles/verification/',
+            CANDIDATE: '/profiles/candidate/',
+            RECRUITER: '/profiles/recruiter/',
+            HOSPITAL: '/profiles/hospital/',
+            VERIFICATION: '/profiles/verification/',
             HOSPITAL_VERIFICATION: '/profiles/hospital-verification/',
             PENDING_VERIFICATIONS: '/profiles/pending-verifications/',
             VERIFIED_PROFILES: '/profiles/verified-profiles/',
@@ -47,30 +48,60 @@ const API_CONFIG = {
         // Jobs
         JOBS: {
             LIST: '/jobs/',
-            DETAIL: '/jobs/',
+            DETAIL: '/jobs/{id}/',
+            CREATE: '/jobs/',
+            UPDATE: '/jobs/{id}/',
+            DELETE: '/jobs/{id}/',
             APPLICATIONS: '/jobs/applications/',
-            APPLY: '/jobs/applications/',
-            MY_APPLICATIONS: '/jobs/applications/',  // Filter will be applied in request
-            POSTED_JOBS: '/jobs/',  // For recruiters, their own jobs will be returned
-            ACTIVE: '/jobs/active/',
-            COMPLETED: '/jobs/completed/',
+            APPLY: '/jobs/{id}/apply/',
+            MY_APPLICATIONS: '/jobs/my-applications/',
+            POSTED_JOBS: '/jobs/my-jobs/',
             SEARCH: '/jobs/search/',
-            ADVANCED_SEARCH: '/jobs/advanced-search/',
-            MATCHES: '/jobs/matches/',
+        },
+        
+        // Documents
+        DOCUMENTS: {
+            UPLOAD: '/documents/upload/',
+            LIST: '/documents/',
+            DELETE: '/documents/{id}/',
         },
         
         // Notifications
         NOTIFICATIONS: {
             LIST: '/notifications/',
-            MARK_READ: '/notifications/mark-read/',
-            WEBSOCKET: 'ws://localhost:8000/api/ws/chat/',
-            GET_MESSAGES: '/notifications/messages/',
+            MARK_READ: '/notifications/{id}/mark-read/',
+            MARK_ALL_READ: '/notifications/mark-all-read/',
+        },
+        
+        // Messaging
+        MESSAGING: {
+            CONVERSATIONS: '/messaging/conversations/',
+            MESSAGES: '/messaging/conversations/{id}/messages/',
+            SEND: '/messaging/conversations/{id}/send/',
+            CREATE_CONVERSATION: '/messaging/conversations/create/',
+        },
+        
+        // Testimonials
+        TESTIMONIALS: {
+            LIST: '/testimonials/',
+            CREATE: '/testimonials/',
+            UPDATE: '/testimonials/{id}/',
+            DELETE: '/testimonials/{id}/',
         }
     },
     
     // Helper to get full URL
     getApiUrl: function(endpoint) {
         return this.BASE_URL + endpoint;
+    },
+    
+    // Helper to replace URL parameters
+    replaceUrlParams: function(endpoint, params) {
+        let url = endpoint;
+        for (const [key, value] of Object.entries(params)) {
+            url = url.replace(`{${key}}`, value);
+        }
+        return url;
     }
 };
 

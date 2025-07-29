@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareChain - Real-time Messaging</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .container {
+            display: flex;
+            flex: 1;
+            height: calc(100vh - 80px);
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+        }
+        
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+        
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: #fafafa;
+        }
+        
+        .messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+        
+        .message-input {
+            padding: 1rem;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-room {
+            padding: 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .chat-room:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .chat-room.active {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .chat-room-title {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        
+        .chat-room-last-message {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 18px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        
+        .message.sent {
+            background-color: #2196f3;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .message.received {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        
+        .message.system {
+            background-color: #fff3cd;
+            color: #856404;
+            text-align: center;
+            margin: 0 auto;
+            font-style: italic;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+        
+        .typing-indicator {
+            color: #666;
+            font-style: italic;
+            padding: 0.5rem;
+        }
+        
+        .online-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .offline-indicator {
+            width: 8px;
+            height: 8px;
+            background-color: #ccc;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+        }
+        
+        button {
+            padding: 0.75rem 1.5rem;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #1976d2;
+        }
+        
+        .status-bar {
+            padding: 0.5rem 1rem;
+            background-color: #e8f5e8;
+            border-bottom: 1px solid #c8e6c9;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CareChain Messaging</h1>
+        <div id="connection-status" class="status-bar">Connecting...</div>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div style="padding: 1rem; border-bottom: 1px solid #e0e0e0;">
+                <h3>Conversations</h3>
+            </div>
+            <div id="chat-rooms">
+                <!-- Chat rooms will be loaded here -->
+                <div class="chat-room" data-room-id="test-room">
+                    <div class="chat-room-title">
+                        <span class="online-indicator"></span>
+                        Test Job - John Doe
+                    </div>
+                    <div class="chat-room-last-message">Click to start messaging...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <div class="chat-header">
+                <h3 id="current-chat-title">Select a conversation to start messaging</h3>
+                <div id="participant-status"></div>
+            </div>
+            
+            <div class="messages" id="messages">
+                <!-- Messages will appear here -->
+            </div>
+            
+            <div id="typing-indicator" class="typing-indicator" style="display: none;">
+                Someone is typing...
+            </div>
+            
+            <div class="message-input">
+                <input type="text" id="message-input" placeholder="Type your message..." disabled>
+                <button id="send-button" disabled>Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let chatSocket = null;
+        let currentRoomId = null;
+        let currentUser = 'user1'; // This would come from authentication
+        let typingTimer = null;
+        
+        // Initialize the messaging interface
+        function initializeMessaging() {
+            setupEventListeners();
+            loadChatRooms();
+        }
+        
+        function setupEventListeners() {
+            const messageInput = document.getElementById('message-input');
+            const sendButton = document.getElementById('send-button');
+            
+            // Send message on Enter key or button click
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Typing indicator
+            messageInput.addEventListener('input', function() {
+                if (chatSocket && currentRoomId) {
+                    sendTypingIndicator(true);
+                    
+                    // Clear previous timer
+                    clearTimeout(typingTimer);
+                    
+                    // Set new timer to stop typing indicator
+                    typingTimer = setTimeout(() => {
+                        sendTypingIndicator(false);
+                    }, 1000);
+                }
+            });
+        }
+        
+        function connectToRoom(roomId) {
+            // Disconnect from previous room
+            if (chatSocket) {
+                chatSocket.close();
+            }
+            
+            currentRoomId = roomId;
+            
+            // Connect to WebSocket
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws/chat/${roomId}/`;
+            
+            chatSocket = new WebSocket(wsUrl);
+            
+            chatSocket.onopen = function(e) {
+                updateConnectionStatus('Connected', 'success');
+                enableMessageInput();
+                loadMessages(roomId);
+            };
+            
+            chatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                handleWebSocketMessage(data);
+            };
+            
+            chatSocket.onclose = function(e) {
+                updateConnectionStatus('Disconnected', 'error');
+                disableMessageInput();
+                console.log('Chat socket closed');
+            };
+            
+            chatSocket.onerror = function(e) {
+                updateConnectionStatus('Connection Error', 'error');
+                console.error('Chat socket error:', e);
+            };
+        }
+        
+        function handleWebSocketMessage(data) {
+            switch(data.type) {
+                case 'chat_message':
+                    displayMessage(data.message);
+                    break;
+                case 'typing_indicator':
+                    handleTypingIndicator(data);
+                    break;
+                case 'user_status':
+                    updateUserStatus(data);
+                    break;
+            }
+        }
+        
+        function sendMessage() {
+            const messageInput = document.getElementById('message-input');
+            const content = messageInput.value.trim();
+            
+            if (content && chatSocket && currentRoomId) {
+                chatSocket.send(JSON.stringify({
+                    'type': 'chat_message',
+                    'content': content
+                }));
+                
+                messageInput.value = '';
+                sendTypingIndicator(false);
+            }
+        }
+        
+        function sendTypingIndicator(isTyping) {
+            if (chatSocket && currentRoomId) {
+                chatSocket.send(JSON.stringify({
+                    'type': 'typing_indicator',
+                    'is_typing': isTyping
+                }));
+            }
+        }
+        
+        function displayMessage(message) {
+            const messagesContainer = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            
+            const isSent = message.sender.username === currentUser;
+            messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+            
+            if (message.message_type === 'system') {
+                messageDiv.className = 'message system';
+            }
+            
+            const time = new Date(message.timestamp).toLocaleTimeString();
+            
+            messageDiv.innerHTML = `
+                <div>${message.content}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function handleTypingIndicator(data) {
+            const typingIndicator = document.getElementById('typing-indicator');
+            
+            if (data.is_typing && data.username !== currentUser) {
+                typingIndicator.textContent = `${data.username} is typing...`;
+                typingIndicator.style.display = 'block';
+            } else {
+                typingIndicator.style.display = 'none';
+            }
+        }
+        
+        function updateUserStatus(data) {
+            // Update online/offline indicators in chat rooms list
+            const indicator = document.querySelector(`[data-room-id="${currentRoomId}"] .online-indicator, [data-room-id="${currentRoomId}"] .offline-indicator`);
+            if (indicator) {
+                indicator.className = data.is_online ? 'online-indicator' : 'offline-indicator';
+            }
+        }
+        
+        function loadChatRooms() {
+            // This would fetch from API: /api/messaging/rooms/
+            // For demo, we'll use mock data
+            const mockRooms = [
+                {
+                    id: 'room-1',
+                    title: 'Staff Nurse Position - Apollo Hospital',
+                    participant: 'Dr. Smith',
+                    lastMessage: 'When can you start?',
+                    isOnline: true
+                },
+                {
+                    id: 'room-2', 
+                    title: 'Lab Technician - Fortis Healthcare',
+                    participant: 'HR Manager',
+                    lastMessage: 'Thank you for your application',
+                    isOnline: false
+                }
+            ];
+            
+            const chatRoomsContainer = document.getElementById('chat-rooms');
+            chatRoomsContainer.innerHTML = '<div style="padding: 1rem; border-bottom: 1px solid #e0e0e0;"><h3>Conversations</h3></div>';
+            
+            mockRooms.forEach(room => {
+                const roomDiv = document.createElement('div');
+                roomDiv.className = 'chat-room';
+                roomDiv.setAttribute('data-room-id', room.id);
+                
+                roomDiv.innerHTML = `
+                    <div class="chat-room-title">
+                        <span class="${room.isOnline ? 'online-indicator' : 'offline-indicator'}"></span>
+                        ${room.participant}
+                    </div>
+                    <div class="chat-room-last-message">${room.lastMessage}</div>
+                `;
+                
+                roomDiv.addEventListener('click', () => {
+                    selectChatRoom(room.id, room.title);
+                });
+                
+                chatRoomsContainer.appendChild(roomDiv);
+            });
+        }
+        
+        function selectChatRoom(roomId, title) {
+            // Update UI
+            document.querySelectorAll('.chat-room').forEach(room => {
+                room.classList.remove('active');
+            });
+            
+            document.querySelector(`[data-room-id="${roomId}"]`).classList.add('active');
+            document.getElementById('current-chat-title').textContent = title;
+            
+            // Clear messages
+            document.getElementById('messages').innerHTML = '';
+            
+            // Connect to room
+            connectToRoom(roomId);
+        }
+        
+        function loadMessages(roomId) {
+            // This would fetch from API: /api/messaging/rooms/{roomId}/messages/
+            // For demo, add some mock messages
+            const mockMessages = [
+                {
+                    id: '1',
+                    content: 'Hello! I saw your application for the Staff Nurse position.',
+                    sender: { username: 'hr_manager' },
+                    timestamp: new Date().toISOString(),
+                    message_type: 'text'
+                },
+                {
+                    id: '2',
+                    content: 'Hi! Yes, I\'m very interested in this position.',
+                    sender: { username: currentUser },
+                    timestamp: new Date().toISOString(),
+                    message_type: 'text'
+                }
+            ];
+            
+            mockMessages.forEach(message => {
+                displayMessage(message);
+            });
+        }
+        
+        function enableMessageInput() {
+            document.getElementById('message-input').disabled = false;
+            document.getElementById('send-button').disabled = false;
+        }
+        
+        function disableMessageInput() {
+            document.getElementById('message-input').disabled = true;
+            document.getElementById('send-button').disabled = true;
+        }
+        
+        function updateConnectionStatus(status, type) {
+            const statusElement = document.getElementById('connection-status');
+            statusElement.textContent = status;
+            statusElement.className = `status-bar ${type}`;
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeMessaging);
+    </script>
+</body>
+</html>

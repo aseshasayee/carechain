@@ -48,48 +48,44 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content">
-        <div class="container">
-            <!-- Hero Section -->
-            <section class="hero-section text-center mb-6">
-                <h1 class="text-lg font-semibold mb-4">Welcome to CareChain</h1>
-                <p class="text-muted mb-6">Connecting Healthcare Professionals with Quality Career Opportunities</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-user-md text-primary" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                            <h3 class="font-semibold mb-2">For Healthcare Professionals</h3>
-                            <p class="text-muted text-sm mb-4">Find your next career opportunity with leading healthcare institutions</p>
-                            <a href="login.html" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Find Jobs
-                            </a>
-        </div>
-    </div>
-
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-hospital text-primary" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                            <h3 class="font-semibold mb-2">For Healthcare Employers</h3>
-                            <p class="text-muted text-sm mb-4">Connect with qualified healthcare professionals for your organization</p>
-                            <a href="login.html" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Post Jobs
-                            </a>
+        <!-- Main Content -->
+    <main class="main">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            Connect Healthcare Professionals with <span class="highlight">Premier Opportunities</span>
+                        </h1>
+                        <p class="hero-description">
+                            CareChain is the leading healthcare job portal connecting qualified medical professionals 
+                            with top hospitals and healthcare facilities across India.
+                        </p>
+                        <div class="hero-actions" id="heroActions">
+                            <!-- Actions will be populated based on auth state -->
                         </div>
-        </div>
-        
-                    <div class="card">
-                        <div class="card-body text-center">
-                            <i class="fas fa-shield-alt text-primary" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                            <h3 class="font-semibold mb-2">Verified & Secure</h3>
-                            <p class="text-muted text-sm mb-4">All profiles and credentials are verified for your safety</p>
-                            <a href="register.html" class="btn btn-primary">
-                                <i class="fas fa-user-check"></i> Get Verified
-                            </a>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">10,000+</div>
+                                <div class="stat-label">Healthcare Jobs</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">5,000+</div>
+                                <div class="stat-label">Verified Professionals</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">500+</div>
+                                <div class="stat-label">Partner Hospitals</div>
+                            </div>
                         </div>
                     </div>
-        </div>
-            </section>
+                    <div class="hero-image">
+                        <i class="fas fa-user-md hero-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
 
             <!-- Features Section -->
             <section class="features-section mb-6">
@@ -204,13 +200,73 @@
     </main>
 
     <script src="js/api-config.js"></script>
+    <script src="js/auth-helper.js"></script>
+    <script src="js/api-helper.js"></script>
+    <script src="js/navigation.js"></script>
     <script>
-        // User role definitions
-        const USER_ROLES = {
-            CANDIDATE: 'candidate',
-            RECRUITER: 'recruiter',
-            ADMIN: 'admin'
+        // Homepage functionality
+        const HomePage = {
+            init: function() {
+                this.updateHeroActions();
+                this.setupEventListeners();
+            },
+
+            updateHeroActions: function() {
+                const heroActions = document.getElementById('heroActions');
+                if (!heroActions) return;
+
+                if (AuthHelper.isLoggedIn()) {
+                    const userRole = AuthHelper.getUserRole();
+                    const user = AuthHelper.getUser();
+                    const fullName = AuthHelper.getUserFullName();
+
+                    heroActions.innerHTML = `
+                        <div class="welcome-back">
+                            <h3>Welcome back, ${fullName || user.email.split('@')[0]}!</h3>
+                            <div class="dashboard-actions">
+                                ${this.getDashboardButton(userRole)}
+                                <a href="jobs.html" class="btn btn-outline btn-lg">
+                                    <i class="fas fa-search"></i> Browse Jobs
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    heroActions.innerHTML = `
+                        <div class="auth-actions">
+                            <a href="register.html" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus"></i> Get Started
+                            </a>
+                            <a href="jobs.html" class="btn btn-outline btn-lg">
+                                <i class="fas fa-search"></i> Browse Jobs
+                            </a>
+                        </div>
+                    `;
+                }
+            },
+
+            getDashboardButton: function(role) {
+                switch (role) {
+                    case 'admin':
+                        return '<a href="admin_dashboard.html" class="btn btn-primary btn-lg"><i class="fas fa-tachometer-alt"></i> Admin Dashboard</a>';
+                    case 'recruiter':
+                        return '<a href="recruiter_dashboard.html" class="btn btn-primary btn-lg"><i class="fas fa-tachometer-alt"></i> Recruiter Dashboard</a>';
+                    case 'candidate':
+                        return '<a href="candidate_dashboard.html" class="btn btn-primary btn-lg"><i class="fas fa-tachometer-alt"></i> Candidate Dashboard</a>';
+                    default:
+                        return '<a href="login.html" class="btn btn-primary btn-lg"><i class="fas fa-sign-in-alt"></i> Login</a>';
+                }
+            },
+
+            setupEventListeners: function() {
+                // Any additional event listeners for the homepage
+            }
         };
+
+        // Initialize homepage when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            HomePage.init();
+        });
 
         // Navigation configurations for each role
         const NAV_CONFIG = {

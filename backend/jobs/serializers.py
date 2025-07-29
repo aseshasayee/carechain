@@ -30,15 +30,19 @@ class RecruiterProfileSerializer(serializers.ModelSerializer):
 class CandidateProfileSerializer(serializers.ModelSerializer):
     """Simplified serializer for CandidateProfile."""
     
+    email = serializers.CharField(source='user.email', read_only=True)
+    experience_years = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = CandidateProfile
-        fields = ['id', 'first_name', 'last_name', 'headline']
+        fields = ['id', 'first_name', 'last_name', 'headline', 'email', 'experience_years']
 
 
 class JobSerializer(serializers.ModelSerializer):
     """Serializer for the Job model."""
     
     employer_details = RecruiterProfileSerializer(source='employer', read_only=True)
+    applications_count = serializers.SerializerMethodField()
     
     class Meta:
         model = Job
@@ -47,9 +51,14 @@ class JobSerializer(serializers.ModelSerializer):
             'location', 'department', 'job_type', 'shift_start_time', 
             'shift_end_time', 'start_date', 'end_date', 'salary', 'pay_unit',
             'required_qualifications', 'required_skills', 'experience_required',
-            'is_filled', 'is_active', 'auto_fill_enabled', 'created_at', 'updated_at'
+            'is_filled', 'is_active', 'auto_fill_enabled', 'created_at', 'updated_at',
+            'applications_count'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'employer']
+    
+    def get_applications_count(self, obj):
+        """Get the number of applications for this job."""
+        return obj.applications.count()
 
 
 class JobDetailsSerializer(serializers.ModelSerializer):
@@ -187,15 +196,17 @@ class JobApplicationSerializer(serializers.ModelSerializer):
     
     job_details = JobSerializer(source='job', read_only=True)
     candidate_details = CandidateProfileSerializer(source='profile', read_only=True)
-    
+    applied_date = serializers.DateTimeField(source='applied_on', read_only=True)
+    candidate = CandidateProfileSerializer(source='profile', read_only=True)
+
     class Meta:
         model = JobApplication
         fields = [
-            'id', 'job', 'job_details', 'profile', 'candidate_details', 'status', 
-            'personal_statement', 'applied_on', 'withdrawn'
+            'id', 'job', 'job_details', 'profile', 'candidate_details', 'candidate',
+            'status', 'personal_statement', 'applied_on', 'applied_date', 'withdrawn'
         ]
         read_only_fields = [
-            'id', 'profile', 'candidate_details', 'applied_on'
+            'id', 'profile', 'candidate_details', 'applied_on', 'applied_date'
         ]
 
 

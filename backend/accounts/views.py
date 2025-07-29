@@ -55,138 +55,50 @@ class RegisterUserView(generics.CreateAPIView):
 
 
 class LoginView(APIView):
-    """View for candidate login."""
-    
+    """Unified login for any user type."""
     permission_classes = [permissions.AllowAny]
     serializer_class = LoginSerializer
-    
+
     def post(self, request, *args, **kwargs):
-        """Handle POST requests: authenticate user and return tokens."""
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
-        
         user = authenticate(email=email, password=password)
-        
         if user is None:
-            return Response(
-                {'error': 'Invalid email or password'}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
+            return Response({'error': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
         if not user.is_active:
-            return Response(
-                {'error': 'Account is disabled'}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-            
+            return Response({'error': 'Account is disabled'}, status=status.HTTP_401_UNAUTHORIZED)
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
-        
         data = {
             'id': user.id,
             'email': user.email,
             'first_name': user.first_name,
             'last_name': user.last_name,
             'token': access_token,
+            'refresh': refresh_token,
+            'is_superuser': user.is_superuser,
+            'is_staff': user.is_staff,
+            'is_recruiter': getattr(user, 'is_recruiter', False),
+            'is_candidate': getattr(user, 'is_candidate', False),
+            'role': 'admin' if user.is_superuser or user.is_staff else ('recruiter' if getattr(user, 'is_recruiter', False) else 'candidate'),
         }
-        
-        # For candidates, include additional profile info
-        if user.is_candidate:
+        # Optionally add profile info
+        if getattr(user, 'is_candidate', False):
             try:
                 profile = CandidateProfile.objects.get(user=user)
                 data['profile'] = CandidateProfileSerializer(profile).data
-                
-                # Check document verification status
-                has_uploaded_documents = profile.supporting_documents.exists()
-                has_verified_documents = profile.supporting_documents.filter(verified=True).exists()
-                
-                # Add verification flags to response
-                data['profile_complete'] = bool(
-                    profile.first_name and profile.last_name and
-                    profile.dob and profile.contact_number and
-                    profile.location
-                )
-                data['documents_uploaded'] = has_uploaded_documents
-                data['documents_verified'] = has_verified_documents
-                data['is_proof_ready'] = has_verified_documents and data['profile_complete']
-                
             except CandidateProfile.DoesNotExist:
-                # Create an empty profile for the candidate
-                profile = CandidateProfile.objects.create(
-                    user=user,
-                    first_name=user.first_name or "",
-                    last_name=user.last_name or ""
-                )
-                data['profile'] = CandidateProfileSerializer(profile).data
-                data['profile_complete'] = False
-                data['documents_uploaded'] = False
-                data['documents_verified'] = False
-                data['is_proof_ready'] = False
-                
-        return Response(data, status=status.HTTP_200_OK)
-
-
-class RecruiterLoginView(APIView):
-    """View for recruiter login."""
-    
-    permission_classes = [permissions.AllowAny]
-    serializer_class = LoginSerializer
-    
-    def post(self, request, *args, **kwargs):
-        """Handle POST requests: authenticate recruiter and return tokens."""
-        serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        email = serializer.validated_data['email']
-        password = serializer.validated_data['password']
-        
-        user = authenticate(email=email, password=password)
-        
-        if user is None:
-            return Response(
-                {'error': 'Invalid email or password'}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        if not user.is_active:
-            return Response(
-                {'error': 'Account is disabled'}, 
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        if not hasattr(user, 'is_recruiter') or not user.is_recruiter:
-            return Response(
-                {'error': 'Account is not a recruiter'}, 
-                status=status.HTTP_403_FORBIDDEN
-            )
-            
-        # Generate JWT tokens
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        
-        data = {
-            'id': user.id,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'token': access_token,
-        }
-        
-        # Include recruiter profile if it exists
-        try:
-            profile = RecruiterProfile.objects.get(user=user)
-            data['hospital_name'] = profile.hospital.name if profile.hospital else None
-            data['hospital_id'] = profile.hospital.id if profile.hospital else None
-            data['position'] = profile.position
-            data['is_verified'] = profile.is_verified
-        except RecruiterProfile.DoesNotExist:
-            pass
-                
+                pass
+        if getattr(user, 'is_recruiter', False):
+            try:
+                profile = RecruiterProfile.objects.get(user=user)
+                data['recruiter_profile'] = profile.id
+            except RecruiterProfile.DoesNotExist:
+                pass
         return Response(data, status=status.HTTP_200_OK)
 
 
@@ -297,4 +209,4 @@ class ChangePasswordView(generics.UpdateAPIView):
         user.set_password(serializer.validated_data['new_password'])
         user.save()
         
-        return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK) 
+        return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)

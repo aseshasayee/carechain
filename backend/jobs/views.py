@@ -97,18 +97,30 @@ class JobApplicationListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        """Return job applications based on user type."""
+        """Return job applications based on user type and optional job filtering."""
         user = self.request.user
+        
+        # Check if we're filtering by job ID from URL
+        job_id = self.kwargs.get('job_id')
         
         if user.is_recruiter:
             # Recruiters see applications for their jobs
-            return JobApplication.objects.filter(job__employer__user=user).order_by('-applied_on')
+            queryset = JobApplication.objects.filter(job__employer__user=user)
+            if job_id:
+                queryset = queryset.filter(job_id=job_id)
+            return queryset.order_by('-applied_on')
         elif user.is_candidate:
             # Candidates see their own applications
-            return JobApplication.objects.filter(profile__user=user).order_by('-applied_on')
+            queryset = JobApplication.objects.filter(profile__user=user)
+            if job_id:
+                queryset = queryset.filter(job_id=job_id)
+            return queryset.order_by('-applied_on')
         else:
             # Admins see all applications
-            return JobApplication.objects.all().order_by('-applied_on')
+            queryset = JobApplication.objects.all()
+            if job_id:
+                queryset = queryset.filter(job_id=job_id)
+            return queryset.order_by('-applied_on')
     
     def perform_create(self, serializer):
         """Save the application with the candidate profile."""

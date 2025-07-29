@@ -9,6 +9,17 @@ from django.utils import timezone
 
 
 class CandidateProfile(models.Model):
+    # ...existing code...
+
+    @property
+    def experience_years(self):
+        """
+        Returns the candidate's industrial experience in years.
+        This is a placeholder. You can enhance this logic to sum up experience from jobs, documents, etc.
+        """
+        # Example: If you have a field or related model for experience, calculate here.
+        # For now, return 0 or a static value.
+        return 0
     """Model for storing candidate profile information."""
     
     GENDER_CHOICES = (
@@ -56,6 +67,7 @@ class CandidateProfile(models.Model):
     rejection_reason = models.TextField(null=True, blank=True)
     
     # Application quota tracking
+    experience_years = models.PositiveIntegerField(default=0, help_text="Years of industrial experience")
     monthly_application_count = models.PositiveIntegerField(default=0)
     monthly_application_quota = models.PositiveIntegerField(default=50)
     monthly_job_viewed_count = models.PositiveIntegerField(default=0)

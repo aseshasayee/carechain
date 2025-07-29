@@ -13,44 +13,18 @@ from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
-from .models import (
-    ChatRoom,
-    ChatMessage,
-    MessageReceipt,
-    UserPresence
-)
-
-User = get_user_model()
-logger = logging.getLogger(__name__)
-
-# Redis connection health check
-async def check_channel_layer():
-    """Check if channel layer is working properly"""
-    try:
-        channel_name = "health_check"
-        message = {"type": "health.check"}
-        await get_channel_layer().send(channel_name, message)
-        return True
-    except (ChannelFull, ConnectionRefusedError) as e:
-        logger.error(f"Channel layer health check failed: {str(e)}")
-        return False
-    except Exception as e:
-        logger.error(f"Unexpected error in channel layer health check: {str(e)}")
-        return False
-
-# Get channel layer with proper error handling
-def get_channel_layer():
-    from channels.layers import get_channel_layer
-    return get_channel_layer()
-
-
 class ChatConsumer(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = None
         self.user_room = None  # Personal room for the user
         self.active_rooms = set()  # Track rooms the connection is in
-    
+        # Move model imports here to avoid AppRegistryNotReady
+        global ChatRoom, ChatMessage, MessageReceipt, UserPresence
+        from .models import ChatRoom, ChatMessage, MessageReceipt, UserPresence
+        from django.contrib.auth import get_user_model
+        self.User = get_user_model()
+
     async def connect(self):
         self.user = self.scope["user"]
         
@@ -589,4 +563,4 @@ class ChatConsumer(AsyncWebsocketConsumer):
             participant_ids = room.participants.values_list('id', flat=True)
             contact_ids.update(participant_ids)
         
-        return list(contact_ids) 
+        return list(contact_ids)

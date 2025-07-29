@@ -23,7 +23,10 @@ urlpatterns = [
     path('', JobListCreateView.as_view(), name='job-list'),
     path('<int:pk>/', JobDetailView.as_view(), name='job-detail'),
     
-    # Job Applications
+    # Job Applications for specific job
+    path('<int:job_id>/applications/', JobApplicationListCreateView.as_view(), name='job-applications-for-job'),
+    
+    # Job Applications (general)
     path('applications/', JobApplicationListCreateView.as_view(), name='job-application-list'),
     path('applications/<int:pk>/', JobApplicationDetailView.as_view(), name='job-application-detail'),
     
