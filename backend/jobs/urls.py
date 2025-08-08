@@ -14,6 +14,16 @@ from .views import (
     CompletedJobListView,
     JobSearchView,
     AdvancedJobSearchView,
+    InterviewListCreateView,
+    InterviewDetailView,
+    InterviewConfirmView,
+    FeedbackListCreateView,
+    FeedbackDetailView,
+    CandidateSearchView,
+    JobApplicationStatusUpdateView,
+    InviteToApplyView,
+    HospitalStatsView,
+    JobCandidatesView,
 )
 
 app_name = 'jobs'
@@ -43,4 +53,24 @@ urlpatterns = [
     # Job Search
     path('search/', JobSearchView.as_view(), name='job-search'),
     path('advanced-search/', AdvancedJobSearchView.as_view(), name='advanced-job-search'),
+    
+    # Interviews
+    path('interviews/', InterviewListCreateView.as_view(), name='interview-list'),
+    path('interviews/<int:pk>/', InterviewDetailView.as_view(), name='interview-detail'),
+    path('interviews/<int:pk>/confirm/', InterviewConfirmView.as_view(), name='interview-confirm'),
+    
+    # Feedback
+    path('feedback/', FeedbackListCreateView.as_view(), name='feedback-list'),
+    path('feedback/<int:pk>/', FeedbackDetailView.as_view(), name='feedback-detail'),
+    
+    # Enhanced Job Management
+    path('candidates/search/', CandidateSearchView.as_view(), name='candidate-search'),
+    path('applications/<int:pk>/status/', JobApplicationStatusUpdateView.as_view(), name='application-status-update'),
+    path('invite-to-apply/', InviteToApplyView.as_view(), name='invite-to-apply'),
+    
+    # Hospital Dashboard Stats
+    path('hospital-stats/', HospitalStatsView.as_view(), name='hospital-stats'),
+    
+    # Job Candidates (for View Details)
+    path('<int:job_id>/candidates/', JobCandidatesView.as_view(), name='job-candidates'),
 ] 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The CareChain API provides endpoints for managing the healthcare job portal platform. It includes functionality for user authentication, profile management, job management, messaging, and more.
+The CareChain API provides endpoints for managing the healthcare job portal platform. It includes functionality for user authentication, profile management, job management, employee management, job matching, messaging, and more.
 
 ## Base URL
 
@@ -165,6 +165,74 @@ Change the current user's password.
 ```
 
 ## Profiles
+
+### Minimal Hospital Registration & Login
+
+#### Register Hospital
+
+```
+POST /profiles/hospital-register/
+```
+
+Register a new hospital (minimal fields).
+
+**Request Body:**
+```json
+{
+  "name": "ABC Hospital",
+  "registration_number": "HOSP123456",
+  "contact_no": "9876543210",
+  "password": "securepassword"
+}
+```
+
+**Response:**
+```json
+{
+  "id": 1,
+  "name": "ABC Hospital",
+  "registration_number": "HOSP123456",
+  "contact_no": "9876543210",
+  "created_at": "2025-07-29T12:00:00Z",
+  "updated_at": "2025-07-29T12:00:00Z"
+}
+```
+
+#### Hospital Login
+
+```
+POST /profiles/hospital-login/
+```
+
+Login for hospitals using registration number or contact number and password.
+
+**Request Body:**
+```json
+{
+  "registration_number": "HOSP123456",
+  "password": "securepassword"
+}
+// or
+{
+  "contact_no": "9876543210",
+  "password": "securepassword"
+}
+```
+
+**Response:**
+```json
+{
+  "hospital": {
+    "id": 1,
+    "name": "ABC Hospital",
+    "registration_number": "HOSP123456",
+    "contact_no": "9876543210",
+    "created_at": "2025-07-29T12:00:00Z",
+    "updated_at": "2025-07-29T12:00:00Z"
+  },
+  "message": "Login successful."
+}
+```
 
 ### Candidate Profile
 
@@ -1187,6 +1255,402 @@ Connect to `/api/ws/chat/` with a valid authentication token.
 ## Employers
 
 *Note: This API section is currently under development.*
+
+## Employee Management
+
+The Employee Management system provides comprehensive functionality for tracking employment relationships, managing employee availability, performance reviews, and absence requests.
+
+### Employment Records
+
+#### List Employment Records
+
+```
+GET /employee-management/employment/
+```
+
+Retrieve employment records based on user role:
+- **Candidates**: See their own employment history
+- **Recruiters**: See employees in their hospital
+- **Admins**: See all employment records
+
+**Query Parameters:**
+- `status` (optional): Filter by employment status (`active`, `inactive`, `terminated`, `on_leave`)
+- `department` (optional): Filter by department
+- `employment_type` (optional): Filter by type (`full_time`, `part_time`, `contract`, `per_diem`)
+- `search` (optional): Search by employee name or job title
+
+**Response:**
+```json
+[
+  {
+    "id": 1,
+    "employee_name": "John Doe",
+    "job_title": "Registered Nurse",
+    "department": "ICU",
+    "employment_type": "full_time",
+    "start_date": "2023-01-15",
+    "end_date": null,
+    "salary": 75000,
+    "status": "active",
+    "hospital_name": "City General Hospital",
+    "duration": "8 months",
+    "created_at": "2023-01-15T10:00:00Z"
+  }
+]
+```
+
+#### Create Employment Record
+
+```
+POST /employee-management/employment/
+```
+
+Create a new employment record (Recruiters only).
+
+**Request Body:**
+```json
+{
+  "employee": 1,
+  "job_title": "Registered Nurse",
+  "department": "ICU",
+  "employment_type": "full_time",
+  "start_date": "2023-01-15",
+  "salary": 75000,
+  "notes": "Hired through job portal"
+}
+```
+
+#### Update Employment Record
+
+```
+PUT /employee-management/employment/{id}/
+```
+
+Update an existing employment record.
+
+#### Delete Employment Record
+
+```
+DELETE /employee-management/employment/{id}/
+```
+
+### Employee Availability
+
+#### List Availability Records
+
+```
+GET /employee-management/availability/
+```
+
+**Query Parameters:**
+- `status` (optional): Filter by availability status
+- `shift` (optional): Filter by shift type
+- `date` (optional): Filter by specific date
+
+#### Check Employee Availability
+
+```
+POST /employee-management/availability/check/
+```
+
+Check if an employee is available for a specific date and shift.
+
+**Request Body:**
+```json
+{
+  "employee_id": 1,
+  "date": "2023-07-20",
+  "shift": "morning"
+}
+```
+
+**Response:**
+```json
+{
+  "available": true,
+  "status": "available",
+  "notes": null,
+  "employee": "John Doe",
+  "date": "2023-07-20",
+  "shift": "morning"
+}
+```
+
+### Performance Reviews
+
+#### List Performance Reviews
+
+```
+GET /employee-management/performance/
+```
+
+#### Create Performance Review
+
+```
+POST /employee-management/performance/
+```
+
+**Request Body:**
+```json
+{
+  "employment": 1,
+  "review_type": "quarterly",
+  "overall_rating": 4,
+  "clinical_skills": 4,
+  "communication": 5,
+  "teamwork": 4,
+  "punctuality": 5,
+  "patient_care": 4,
+  "strengths": "Excellent patient care and communication skills",
+  "areas_for_improvement": "Could improve time management",
+  "goals": "Complete advanced training in critical care"
+}
+```
+
+### Absence Requests
+
+#### List Absence Requests
+
+```
+GET /employee-management/absence-requests/
+```
+
+**Query Parameters:**
+- `status` (optional): Filter by request status (`pending`, `approved`, `rejected`)
+- `absence_type` (optional): Filter by absence type
+
+#### Create Absence Request
+
+```
+POST /employee-management/absence-requests/
+```
+
+**Request Body:**
+```json
+{
+  "absence_type": "vacation",
+  "start_date": "2023-07-25",
+  "end_date": "2023-07-27",
+  "reason": "Family vacation"
+}
+```
+
+#### Approve/Reject Absence Request
+
+```
+PATCH /employee-management/absence-requests/{id}/approve/
+```
+
+**Request Body:**
+```json
+{
+  "action": "approve",
+  "notes": "Approved - adequate coverage arranged"
+}
+```
+
+## Job Matching System
+
+The Job Matching system provides AI-powered job recommendations, preference management, and matching analytics.
+
+### Job Recommendations
+
+#### Get Personalized Recommendations
+
+```
+GET /matching/recommendations/
+```
+
+Get job recommendations tailored to the candidate's profile and preferences.
+
+**Query Parameters:**
+- `limit` (optional): Number of recommendations (default: 10, max: 50)
+- `min_score` (optional): Minimum match score (default: 60.0)
+- `job_type` (optional): Filter by job type
+- `location` (optional): Filter by location
+
+**Response:**
+```json
+{
+  "recommendations": [
+    {
+      "job": {
+        "id": 1,
+        "title": "ICU Nurse",
+        "hospital": {
+          "name": "City General Hospital",
+          "location": "New York, NY"
+        },
+        "job_type": "Registered Nurse",
+        "required_skills": ["Critical Care", "Patient Monitoring"],
+        "salary_min": 70000,
+        "salary_max": 85000,
+        "location": "New York, NY"
+      },
+      "match_score": 87.5,
+      "match_details": {
+        "skills_match": {
+          "matched_required": ["Critical Care", "Patient Monitoring"],
+          "missing_required": [],
+          "matched_preferred": ["BLS", "ACLS"]
+        },
+        "experience_match": {
+          "candidate_experience": 3,
+          "required_experience": 2,
+          "meets_requirement": true
+        },
+        "location_match": {
+          "distance_miles": 12.5
+        }
+      },
+      "reasons": ["Strong skills match", "Excellent experience match", "Convenient location"],
+      "is_new": true
+    }
+  ],
+  "total_count": 1,
+  "min_score_threshold": 60.0
+}
+```
+
+#### Get Match Summary
+
+```
+GET /matching/recommendations/summary/
+```
+
+Get a summary of the candidate's matching activity.
+
+**Response:**
+```json
+{
+  "total_recommendations": 15,
+  "new_recommendations": 3,
+  "applications_made": 5,
+  "average_match_score": 78.5,
+  "last_recommendation_date": "2023-07-18T10:00:00Z",
+  "preferences_updated": true
+}
+```
+
+### Matching Management
+
+#### Run Job Matching
+
+```
+POST /matching/run-matching/
+```
+
+Manually trigger the job matching process.
+
+**Request Body (optional):**
+```json
+{
+  "candidate_id": 1,
+  "force_update": true
+}
+```
+
+#### Mark Job as Viewed
+
+```
+POST /matching/jobs/{job_id}/viewed/
+```
+
+Mark a recommended job as viewed by the candidate.
+
+### Candidate Preferences
+
+#### Get Preferences
+
+```
+GET /matching/preferences/
+```
+
+#### Update Preferences
+
+```
+PUT /matching/preferences/
+```
+
+**Request Body:**
+```json
+{
+  "preferred_job_types": ["Registered Nurse", "Nurse Practitioner"],
+  "preferred_locations": ["New York, NY", "Boston, MA"],
+  "max_commute_distance": 25,
+  "salary_range": "mid",
+  "min_salary": 70000,
+  "schedule_preference": "full_time",
+  "remote_work_acceptable": false,
+  "night_shift_acceptable": true,
+  "weekend_work_acceptable": true,
+  "travel_acceptable": false,
+  "max_travel_percentage": 0,
+  "notification_frequency": "daily"
+}
+```
+
+### Feedback and Analytics
+
+#### Submit Recommendation Feedback
+
+```
+POST /matching/feedback/
+```
+
+**Request Body:**
+```json
+{
+  "job": 1,
+  "job_match": 1,
+  "feedback_rating": "good",
+  "feedback_comments": "Good match but salary is lower than expected",
+  "is_interested": true,
+  "will_apply": false,
+  "reasons_not_interested": ["salary_too_low"]
+}
+```
+
+#### Get Matching Statistics
+
+```
+GET /matching/stats/
+```
+
+Get system-wide matching statistics (Recruiters/Admins only).
+
+**Response:**
+```json
+{
+  "total_matches": 1250,
+  "high_quality_matches": 890,
+  "applications_from_matches": 350,
+  "average_match_score": 76.8,
+  "top_job_types": ["Registered Nurse", "Nurse Practitioner", "Medical Assistant"],
+  "matching_success_rate": 28.0
+}
+```
+
+#### Auto-Matching Settings
+
+```
+GET /matching/settings/
+PUT /matching/settings/
+```
+
+Manage auto-matching system settings (Admins only).
+
+**Request Body for PUT:**
+```json
+{
+  "is_enabled": true,
+  "matching_frequency": "daily",
+  "min_match_score": 60.0,
+  "max_recommendations_per_candidate": 10,
+  "exclude_applied_jobs": true,
+  "learning_enabled": true
+}
+```
 
 ## Error Handling
 

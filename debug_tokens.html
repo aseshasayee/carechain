@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Authentication Tokens</title>
+</head>
+<body>
+    <h1>Debug Authentication Tokens</h1>
+    <div id="output"></div>
+    
+    <script>
+        function checkTokens() {
+            const output = document.getElementById('output');
+            let html = '<h2>LocalStorage Contents:</h2>';
+            
+            // Check all possible token keys
+            const tokenKeys = ['token', 'access_token', 'accessToken', 'authToken'];
+            const userKeys = ['user', 'userInfo', 'userData'];
+            
+            tokenKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                html += `<p><strong>${key}:</strong> ${value ? value.substring(0, 50) + '...' : 'null'}</p>`;
+            });
+            
+            html += '<h2>User Data:</h2>';
+            userKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                html += `<p><strong>${key}:</strong> ${value || 'null'}</p>`;
+            });
+            
+            html += '<h2>All LocalStorage Keys:</h2>';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                html += `<p><strong>${key}:</strong> ${value ? (value.length > 100 ? value.substring(0, 100) + '...' : value) : 'null'}</p>`;
+            }
+            
+            output.innerHTML = html;
+        }
+        
+        // Check tokens on load
+        checkTokens();
+        
+        // Test API call
+        async function testApiCall() {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) {
+                document.getElementById('output').innerHTML += '<h2>No token found!</h2>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8000/api/profiles/verified-profiles/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                document.getElementById('output').innerHTML += `<h2>API Test Result:</h2><p>Status: ${response.status}</p>`;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('output').innerHTML += `<p>Data: ${JSON.stringify(data, null, 2)}</p>`;
+                } else {
+                    const errorText = await response.text();
+                    document.getElementById('output').innerHTML += `<p>Error: ${errorText}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('output').innerHTML += `<h2>API Test Error:</h2><p>${error.message}</p>`;
+            }
+        }
+        
+        // Add button to test API
+        setTimeout(() => {
+            const button = document.createElement('button');
+            button.textContent = 'Test API Call';
+            button.onclick = testApiCall;
+            document.body.appendChild(button);
+        }, 1000);
+    </script>
+</body>
+</html>

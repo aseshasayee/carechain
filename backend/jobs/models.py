@@ -170,4 +170,93 @@ class CompletedJob(models.Model):
     overall_score = models.PositiveIntegerField(null=True, blank=True)
     
     def __str__(self):
-        return f"{self.profile} - {self.job_title}" 
+        return f"{self.profile} - {self.job_title}"
+
+
+class Interview(models.Model):
+    """Model for storing interview information."""
+    
+    INTERVIEW_TYPES = (
+        ('phone', 'Phone Interview'),
+        ('video', 'Video Interview'),
+        ('in_person', 'In-Person Interview'),
+        ('panel', 'Panel Interview'),
+    )
+    
+    STATUS_CHOICES = (
+        ('scheduled', 'Scheduled'),
+        ('confirmed', 'Confirmed'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+        ('rescheduled', 'Rescheduled'),
+        ('no_show', 'No Show'),
+    )
+    
+    application = models.ForeignKey(
+        JobApplication,
+        on_delete=models.CASCADE,
+        related_name='interviews'
+    )
+    interview_type = models.CharField(max_length=20, choices=INTERVIEW_TYPES)
+    scheduled_datetime = models.DateTimeField()
+    duration_minutes = models.PositiveIntegerField(default=30)
+    location = models.CharField(max_length=255, null=True, blank=True)
+    meeting_link = models.URLField(null=True, blank=True)
+    interviewer_notes = models.TextField(null=True, blank=True)
+    candidate_notes = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
+    
+    # Contact reveal - only after interview acceptance
+    contact_revealed = models.BooleanField(default=False)
+    contact_revealed_at = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-scheduled_datetime']
+    
+    def __str__(self):
+        return f"Interview for {self.application} on {self.scheduled_datetime}"
+
+
+class Feedback(models.Model):
+    """Model for storing feedback after job completion."""
+    
+    FEEDBACK_TYPES = (
+        ('candidate_to_employer', 'Candidate to Employer'),
+        ('employer_to_candidate', 'Employer to Candidate'),
+    )
+    
+    RATING_CHOICES = (
+        (1, '1 - Poor'),
+        (2, '2 - Fair'),
+        (3, '3 - Good'),
+        (4, '4 - Very Good'),
+        (5, '5 - Excellent'),
+    )
+    
+    completed_job = models.ForeignKey(
+        CompletedJob,
+        on_delete=models.CASCADE,
+        related_name='feedback'
+    )
+    feedback_type = models.CharField(max_length=30, choices=FEEDBACK_TYPES)
+    
+    # Rating fields
+    overall_rating = models.PositiveIntegerField(choices=RATING_CHOICES)
+    professionalism_rating = models.PositiveIntegerField(choices=RATING_CHOICES)
+    communication_rating = models.PositiveIntegerField(choices=RATING_CHOICES)
+    punctuality_rating = models.PositiveIntegerField(choices=RATING_CHOICES, null=True, blank=True)
+    
+    # Text feedback
+    comments = models.TextField()
+    would_recommend = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('completed_job', 'feedback_type')
+    
+    def __str__(self):
+        return f"Feedback for {self.completed_job} - {self.feedback_type}" 

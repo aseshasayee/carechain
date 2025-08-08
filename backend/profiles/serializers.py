@@ -48,22 +48,11 @@ class CandidateProfileSerializer(serializers.ModelSerializer):
 
 
 class HospitalSerializer(serializers.ModelSerializer):
-    """Serializer for Hospital model."""
-    
-    recruiters_count = serializers.SerializerMethodField()
-    
     class Meta:
         model = Hospital
         fields = [
-            'id', 'name', 'registration_number', 'gst_number', 'contact_no',
-            'address', 'primary_contact', 'verification_status',
-            'verification_date', 'rejection_reason', 'recruiters_count',
-            'created_at', 'updated_at'
+            'id', 'name', 'registration_number', 'contact_no', 'password', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['verification_status', 'verification_date', 'rejection_reason']
-    
-    def get_recruiters_count(self, obj):
-        return obj.recruiters.count() if hasattr(obj, 'recruiters') else 0
 
 
 class RecruiterProfileSerializer(serializers.ModelSerializer):

@@ -3,7 +3,7 @@ Serializers for the jobs app.
 """
 
 from rest_framework import serializers
-from .models import Job, JobApplication, JobMatch, ActiveJob, CompletedJob
+from .models import Job, JobApplication, JobMatch, ActiveJob, CompletedJob, Interview, Feedback
 from profiles.models import RecruiterProfile, CandidateProfile
 
 
@@ -260,4 +260,43 @@ class CompletedJobSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id', 'job_title', 'employer', 'employer_details', 'profile', 
             'candidate_details', 'joining_date', 'ending_date'
-        ] 
+        ]
+
+
+class InterviewSerializer(serializers.ModelSerializer):
+    """Serializer for the Interview model."""
+    
+    application_details = JobApplicationSerializer(source='application', read_only=True)
+    candidate_name = serializers.SerializerMethodField()
+    job_title = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Interview
+        fields = [
+            'id', 'application', 'application_details', 'candidate_name', 'job_title',
+            'interview_type', 'scheduled_datetime', 'duration_minutes', 'location',
+            'meeting_link', 'interviewer_notes', 'candidate_notes', 'status',
+            'contact_revealed', 'contact_revealed_at', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'contact_revealed_at', 'created_at', 'updated_at']
+    
+    def get_candidate_name(self, obj):
+        return f"{obj.application.profile.first_name} {obj.application.profile.last_name}"
+    
+    def get_job_title(self, obj):
+        return obj.application.job.title
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    """Serializer for the Feedback model."""
+    
+    completed_job_details = CompletedJobSerializer(source='completed_job', read_only=True)
+    
+    class Meta:
+        model = Feedback
+        fields = [
+            'id', 'completed_job', 'completed_job_details', 'feedback_type',
+            'overall_rating', 'professionalism_rating', 'communication_rating',
+            'punctuality_rating', 'comments', 'would_recommend', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at'] 

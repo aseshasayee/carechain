@@ -34,13 +34,18 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     )
     password2 = serializers.CharField(write_only=True, required=False)
     
+    # Hospital-specific fields (optional)
+    hospital_name = serializers.CharField(required=False, allow_blank=True)
+    representative_name = serializers.CharField(required=False, allow_blank=True)
+    representative_contact = serializers.CharField(required=False, allow_blank=True)
+    
     class Meta:
         model = User
         fields = ['email', 'password', 'password2', 'first_name', 'last_name', 
-                  'is_recruiter', 'is_candidate']
+                  'is_recruiter', 'is_candidate', 'hospital_name', 'representative_name', 'representative_contact']
         extra_kwargs = {
-            'first_name': {'required': True},
-            'last_name': {'required': True}
+            'first_name': {'required': False},  # Made optional to handle hospital registrations
+            'last_name': {'required': False}    # Made optional to handle hospital registrations
         }
     
     def validate(self, attrs):
@@ -54,6 +59,31 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 {"user_type": "User cannot be both recruiter and candidate."}
             )
         
+        # Ensure at least one user type is selected
+        if not attrs.get('is_recruiter') and not attrs.get('is_candidate'):
+            raise serializers.ValidationError(
+                {"user_type": "User must be either a recruiter or candidate."}
+            )
+        
+        # Validate based on user type
+        if attrs.get('is_candidate'):
+            # Candidates need first_name and last_name
+            first_name = attrs.get('first_name', '').strip()
+            last_name = attrs.get('last_name', '').strip()
+            if not first_name:
+                raise serializers.ValidationError({"first_name": "First name is required for candidates."})
+            if not last_name:
+                raise serializers.ValidationError({"last_name": "Last name is required for candidates."})
+        
+        if attrs.get('is_recruiter'):
+            # Recruiters need hospital_name and representative_name
+            hospital_name = attrs.get('hospital_name', '').strip()
+            representative_name = attrs.get('representative_name', '').strip()
+            if not hospital_name:
+                raise serializers.ValidationError({"hospital_name": "Hospital name is required for recruiters."})
+            if not representative_name:
+                raise serializers.ValidationError({"representative_name": "Representative name is required for recruiters."})
+        
         return attrs
     
     def create(self, validated_data):
@@ -62,7 +92,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if 'password2' in validated_data:
             validated_data.pop('password2')
         
-        # Create the user with the validated data
+        # Create the user with all the validated data (including hospital fields)
         user = User.objects.create_user(**validated_data)
         return user
 

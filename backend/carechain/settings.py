@@ -31,7 +31,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'oauth2_provider',
     'corsheaders',
-    'channels',
     'django_filters',
     
     # Local apps
@@ -39,13 +38,13 @@ INSTALLED_APPS = [
     'profiles',
     'jobs',
     'documents',
-    'notifications',
     'attendance',
     'employers',
     'testimonials',
     'masters',
     'admin_api',
-    'chat',
+    'employee_management',
+    'matching',
 ]
 
 MIDDLEWARE = [
@@ -60,16 +59,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'carechain.urls'
-
-# Channels configuration
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
-        },
-    },
-}
 
 # Cache configuration with fallback to local memory if Redis is not available
 CACHES = {
@@ -103,7 +92,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'carechain.wsgi.application'
-ASGI_APPLICATION = 'carechain.asgi.application'
 
 # Database
 DATABASES = {
@@ -119,6 +107,12 @@ DATABASES = {
 
 # Custom User Model
 AUTH_USER_MODEL = 'accounts.User'
+
+# Authentication backends
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -161,7 +155,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',

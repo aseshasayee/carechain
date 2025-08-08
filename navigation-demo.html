@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Navigation Demo</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #e0f7fa, #caf0f8);
+            min-height: 100vh;
+        }
+        .demo-section { 
+            background: white; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 16px rgba(189, 224, 254, 0.3);
+        }
+        button { 
+            background: #0077b6; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover { 
+            background: #005577; 
+        }
+        .demo-url {
+            background: #f0f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            background: #e0f7fa;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #0077b6;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Universal Navigation System Demo</h1>
+    
+    <div class="demo-section">
+        <h2>✨ Navigation Features Implemented</h2>
+        <ul class="feature-list">
+            <li><strong>Role-Based Navigation:</strong> Different menu items for candidates, hospitals, and admins</li>
+            <li><strong>Universal Header:</strong> Consistent navigation across all pages</li>
+            <li><strong>Responsive Design:</strong> Mobile-friendly hamburger menu</li>
+            <li><strong>User Authentication:</strong> Dynamic login/logout functionality</li>
+            <li><strong>New Feature Integration:</strong> Employee Management & Job Matching pages included</li>
+            <li><strong>Professional Styling:</strong> Modern glassmorphism design with proper alignment</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>🎭 Test Different User Roles</h2>
+        <p>Click these buttons to simulate login as different user types and see how the navigation changes:</p>
+        
+        <button onclick="setUser('candidate')">👩‍⚕️ Login as Candidate</button>
+        <button onclick="setUser('hospital')">🏥 Login as Hospital</button>
+        <button onclick="setUser('admin')">👨‍💼 Login as Admin</button>
+        <button onclick="logout()">🚪 Logout</button>
+        
+        <div id="userStatus" style="margin-top: 15px; padding: 10px; background: #f0f8ff; border-radius: 5px;"></div>
+    </div>
+
+    <div class="demo-section">
+        <h2>📱 Navigation Menu Items by Role</h2>
+        
+        <h3>👩‍⚕️ Candidate Navigation:</h3>
+        <ul>
+            <li>🏠 Dashboard</li>
+            <li>💼 Browse Jobs</li>
+            <li>❤️ Job Matching (NEW!)</li>
+            <li>📄 My Applications</li>
+            <li>👤 My Profile</li>
+            <li>🔒 Verification</li>
+        </ul>
+
+        <h3>🏥 Hospital Navigation:</h3>
+        <ul>
+            <li>🏠 Dashboard</li>
+            <li>💼 Post Job</li>
+            <li>📋 Manage Jobs</li>
+            <li>👥 Browse Candidates</li>
+            <li>🔧 Employee Management (NEW!)</li>
+            <li>📄 Applications</li>
+            <li>🏥 Hospital Profile</li>
+            <li>🔒 Verification</li>
+        </ul>
+
+        <h3>👨‍💼 Admin Navigation:</h3>
+        <ul>
+            <li>🏠 Admin Dashboard</li>
+            <li>👥 All Candidates</li>
+            <li>💼 All Jobs</li>
+            <li>📄 All Applications</li>
+            <li>🔧 Employee Management</li>
+            <li>❤️ Matching System</li>
+        </ul>
+    </div>
+
+    <div class="demo-section">
+        <h2>🔗 Quick Links to Test</h2>
+        <div class="demo-url">http://localhost:3000/candidate-dashboard</div>
+        <div class="demo-url">http://localhost:3000/hospital-dashboard</div>
+        <div class="demo-url">http://localhost:3000/employee-management</div>
+        <div class="demo-url">http://localhost:3000/job-matching</div>
+        <div class="demo-url">http://localhost:3000/jobs</div>
+    </div>
+
+    <script>
+        function setUser(userType) {
+            const users = {
+                candidate: {
+                    id: 1,
+                    email: 'candidate@demo.com',
+                    first_name: 'Jane',
+                    last_name: 'Doe',
+                    user_type: 'candidate',
+                    verification_status: 'verified'
+                },
+                hospital: {
+                    id: 2,
+                    email: 'admin@cityhospital.com',
+                    first_name: 'City',
+                    last_name: 'Hospital',
+                    user_type: 'hospital',
+                    verification_status: 'verified'
+                },
+                admin: {
+                    id: 3,
+                    email: 'admin@carechain.com',
+                    first_name: 'System',
+                    last_name: 'Admin',
+                    user_type: 'admin',
+                    verification_status: 'verified'
+                }
+            };
+
+            localStorage.setItem('token', 'real-jwt-token-12345');
+            localStorage.setItem('user', JSON.stringify(users[userType]));
+            localStorage.setItem('userType', userType);
+            
+            updateUserStatus(users[userType]);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('userType');
+            updateUserStatus(null);
+        }
+
+        function updateUserStatus(user) {
+            const statusEl = document.getElementById('userStatus');
+            if (user) {
+                statusEl.innerHTML = `
+                    ✅ <strong>Logged in as:</strong> ${user.first_name} ${user.last_name}<br>
+                    📧 <strong>Email:</strong> ${user.email}<br>
+                    🏷️ <strong>Role:</strong> ${user.user_type}<br>
+                    🔒 <strong>Status:</strong> ${user.verification_status}<br>
+                    <em>Now refresh any page to see the navigation update!</em>
+                `;
+                statusEl.style.background = '#d4edda';
+                statusEl.style.borderLeft = '4px solid #28a745';
+            } else {
+                statusEl.innerHTML = '❌ <strong>Not logged in</strong> - Navigation will show public menu';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.borderLeft = '4px solid #dc3545';
+            }
+        }
+
+        // Initialize display
+        const currentUser = localStorage.getItem('user');
+        if (currentUser) {
+            updateUserStatus(JSON.parse(currentUser));
+        } else {
+            updateUserStatus(null);
+        }
+    </script>
+</body>
+</html>

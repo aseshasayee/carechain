@@ -5,7 +5,9 @@ Models for the profiles app.
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
+
 from django.utils import timezone
+from django.core.validators import FileExtensionValidator
 
 
 class CandidateProfile(models.Model):
@@ -132,58 +134,16 @@ class JobPreference(models.Model):
 
 
 class Hospital(models.Model):
-    """Model for storing hospital information."""
-    
-    VERIFICATION_CHOICES = (
-        ('pending', 'Pending'),
-        ('verified', 'Verified'),
-        ('rejected', 'Rejected'),
-    )
-    
+    """Minimal model for hospital login/registration."""
     name = models.CharField(max_length=255)
     registration_number = models.CharField(max_length=100, unique=True)
-    gst_number = models.CharField(max_length=15, null=True, blank=True)
     contact_no = models.CharField(max_length=15)
-    address = models.TextField()
-    primary_contact = models.CharField(max_length=100)
-    
-    # Verification fields
-    verification_status = models.CharField(
-        max_length=20, 
-        choices=VERIFICATION_CHOICES, 
-        default='pending'
-    )
-    verification_date = models.DateTimeField(null=True, blank=True)
-    verified_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='verified_hospitals'
-    )
-    rejection_reason = models.TextField(null=True, blank=True)
-    
+    password = models.CharField(max_length=128)  # Store hashed password
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return self.name
-    
-    def verify(self, verified_by):
-        """Mark hospital as verified"""
-        self.verification_status = 'verified'
-        self.verification_date = timezone.now()
-        self.verified_by = verified_by
-        self.rejection_reason = None
-        self.save()
-    
-    def reject(self, verified_by, reason):
-        """Mark hospital as rejected with reason"""
-        self.verification_status = 'rejected'
-        self.verification_date = timezone.now()
-        self.verified_by = verified_by
-        self.rejection_reason = reason
-        self.save()
 
 
 class RecruiterProfile(models.Model):
@@ -213,3 +173,120 @@ class RecruiterProfile(models.Model):
     def is_profile_complete(self):
         """Check if profile is complete enough for verification"""
         return bool(self.hospital and self.position) 
+
+
+# --- New Models for Robust Verification ---
+
+class HospitalVerification(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+
+    hospital = models.OneToOneField(
+        Hospital,
+        on_delete=models.CASCADE,
+        related_name='verification_record'
+    )
+    official_name = models.CharField(max_length=255)
+    registration_number = models.CharField(max_length=100)
+    gst_number = models.CharField(max_length=50, blank=True, null=True)
+    official_contact_number = models.CharField(max_length=20)
+    address = models.TextField()
+    primary_contact_name = models.CharField(max_length=100)
+    primary_contact_phone = models.CharField(max_length=20)
+    primary_contact_email = models.EmailField()
+
+    # Document uploads
+    registration_proof = models.FileField(
+        upload_to='hospital_verification/registration/',
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+    gst_certificate = models.FileField(
+        upload_to='hospital_verification/gst/',
+        blank=True, null=True,
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+    is_nabh_certified = models.BooleanField(default=False)
+    nabh_certificate = models.FileField(
+        upload_to='hospital_verification/nabh/',
+        blank=True, null=True,
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+    other_certificates = models.FileField(
+        upload_to='hospital_verification/other/',
+        blank=True, null=True,
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin_notes = models.TextField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='hospital_verification_reviews'
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Verification for {self.official_name} ({self.hospital_id})"
+
+
+class CandidateVerification(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
+
+    candidate = models.OneToOneField(
+        CandidateProfile,
+        on_delete=models.CASCADE,
+        related_name='verification_record'
+    )
+    # Professional details
+    registration_number = models.CharField(max_length=100)
+    specialization = models.CharField(max_length=100)
+    years_of_experience = models.PositiveIntegerField()
+
+    # Document uploads
+    qualification_certificates = models.FileField(
+        upload_to='candidate_verification/qualifications/',
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+    registration_certificate = models.FileField(
+        upload_to='candidate_verification/registration/',
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+    resume = models.FileField(
+        upload_to='candidate_verification/resume/',
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+    government_id = models.FileField(
+        upload_to='candidate_verification/id/',
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+    additional_certifications = models.FileField(
+        upload_to='candidate_verification/additional/',
+        blank=True, null=True,
+        validators=[FileExtensionValidator(['pdf', 'jpeg', 'jpg', 'png'])]
+    )
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    admin_notes = models.TextField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='candidate_verification_reviews'
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Verification for {self.candidate.full_name} ({self.candidate_id})"

@@ -44,6 +44,11 @@ class User(AbstractUser):
     is_recruiter = models.BooleanField(default=False)
     is_candidate = models.BooleanField(default=False)
     
+    # Hospital/Recruiter specific fields (only used when is_recruiter=True)
+    hospital_name = models.CharField(max_length=255, null=True, blank=True)
+    representative_name = models.CharField(max_length=255, null=True, blank=True)
+    representative_contact = models.CharField(max_length=20, null=True, blank=True)
+    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     

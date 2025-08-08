@@ -7,7 +7,6 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, Q
 from profiles.models import CandidateProfile, Hospital
 from jobs.models import Job, JobApplication
-from notifications.models import Notification, ChatMessage
 
 User = get_user_model()
 

@@ -56,6 +56,35 @@ The frontend expects the following API endpoints to be implemented:
 - `/accounts/recruiter-login/` - Recruiter login
 - `/accounts/admin-login/` - Admin login
 
+### Hospital Registration & Login (Minimal)
+- `/profiles/hospital-register/` - Minimal hospital registration (name, registration_number, contact_no, password)
+- `/profiles/hospital-login/` - Minimal hospital login (registration_number or contact_no, password)
+
+**Hospital Registration Example:**
+POST `/api/profiles/hospital-register/`
+```
+{
+  "name": "ABC Hospital",
+  "registration_number": "HOSP123456",
+  "contact_no": "9876543210",
+  "password": "securepassword"
+}
+```
+
+**Hospital Login Example:**
+POST `/api/profiles/hospital-login/`
+```
+{
+  "registration_number": "HOSP123456",
+  "password": "securepassword"
+}
+// or
+{
+  "contact_no": "9876543210",
+  "password": "securepassword"
+}
+```
+
 ### Admin
 - `/admin/dashboard-stats/` - Dashboard statistics
 - `/admin/recent-activity/` - Recent activity feed
