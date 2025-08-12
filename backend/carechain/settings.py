@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'corsheaders',
     'django_filters',
+    'channels',
     
     # Local apps
     'accounts',
@@ -92,6 +93,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'carechain.wsgi.application'
+ASGI_APPLICATION = 'carechain.asgi.application'
+
+# Channel Layers Configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Database
 DATABASES = {
